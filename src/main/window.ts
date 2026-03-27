@@ -1,7 +1,18 @@
-import { BrowserWindow, app } from 'electron';
+import { BrowserWindow, app, Menu } from 'electron';
 import path from 'path';
+import os from 'os';
 
 let mainWindow: BrowserWindow | null = null;
+
+function getIconPath(): string {
+  // In dev: src/main/ compiles to dist/main/main/, so go 3 levels up
+  // In prod: files are inside app.asar, __dirname is inside resources/app.asar/dist/main/main
+  const base = path.join(__dirname, '../../..');
+
+  return os.type() === 'Darwin'
+    ? path.join(base, 'build', 'logoWa1Link.icns')
+    : path.join(base, 'build', 'logoWa1Link.ico');
+}
 
 export function createMainWindow(): BrowserWindow {
   mainWindow = new BrowserWindow({
@@ -9,6 +20,7 @@ export function createMainWindow(): BrowserWindow {
     height: 800,
     minWidth: 900,
     minHeight: 600,
+    icon: getIconPath(),
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       nodeIntegration: false,
@@ -17,9 +29,17 @@ export function createMainWindow(): BrowserWindow {
       webSecurity: false, // Allow loading from localhost in dev
     },
     titleBarStyle: 'default',
-    show: true, // Show immediately
-    backgroundColor: '#1a1a2e', // Dark background while loading
+    show: true,
+    backgroundColor: '#1a1a2e',
   });
+
+  mainWindow.setTitle('WA1Link');
+
+  if (!app.isPackaged) {
+    // Hide menu in production
+  } else {
+    Menu.setApplicationMenu(null);
+  }
 
   const isDev = !app.isPackaged;
   const devUrl = 'http://localhost:3000';

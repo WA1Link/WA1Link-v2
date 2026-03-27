@@ -25,14 +25,17 @@
         "arch": ["x64"]
       }
     ],
-    "icon": "build/logoWa1Link.ico",
-    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+    "icon": "build/logoWa1Link.ico"
   },
   "nsis": {
+    "artifactName": "${productName}-Setup-${version}-${os}-${arch}.${ext}",
     "oneClick": false,
     "allowToChangeInstallationDirectory": true,
     "createDesktopShortcut": true,
-    "createStartMenuShortcut": true
+    "createStartMenuShortcut": true,
+    "installerIcon": "build/logoWa1Link.ico",
+    "uninstallerIcon": "build/logoWa1Link.ico",
+    "installerHeaderIcon": "build/logoWa1Link.ico"
   },
   "mac": {
     "target": [
