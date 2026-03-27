@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+
+  * {
+    @apply border-gray-200;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-whatsapp-light text-white hover:bg-whatsapp-dark focus:ring-whatsapp-light;
+  }
+
+  .btn-secondary {
+    @apply btn bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-300;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-200;
+  }
+
+  .input {
+    @apply block w-full px-3 py-2 text-sm border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-whatsapp-light focus:border-whatsapp-light;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-sm border p-4;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply badge bg-green-100 text-green-800;
+  }
+
+  .badge-warning {
+    @apply badge bg-yellow-100 text-yellow-800;
+  }
+
+  .badge-error {
+    @apply badge bg-red-100 text-red-800;
+  }
+
+  .badge-info {
+    @apply badge bg-blue-100 text-blue-800;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded hover:bg-gray-400;
+}
+
+/* QR Code styling */
+.qr-container {
+  @apply bg-white p-4 rounded-lg shadow-lg inline-block;
+}
