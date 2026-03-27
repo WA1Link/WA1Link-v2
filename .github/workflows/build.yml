@@ -94,48 +94,6 @@ jobs:
             dist-electron/latest-mac.yml
           retention-days: 30
 
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Rebuild native modules
-        run: npx electron-rebuild -f -w better-sqlite3
-
-      - name: Build React app
-        run: npm run build
-        env:
-          CI: false
-
-      - name: Build Electron main process
-        run: npm run build:electron
-
-      - name: Build Linux
-        run: npx electron-builder --linux --publish never
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-build
-          path: |
-            dist-electron/*.AppImage
-            dist-electron/*.deb
-            dist-electron/*.blockmap
-            dist-electron/latest-linux.yml
-          retention-days: 30
-
   release-windows:
     needs: build-windows
     runs-on: ubuntu-latest
@@ -198,33 +156,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  release-linux:
-    needs: build-linux
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    steps:
-      - name: Download Linux artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: linux-build
-          path: artifacts
-
-      - name: Create Linux Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}-linux
-          name: "${{ github.ref_name }} - Linux"
-          files: artifacts/**/*
-          draft: false
-          prerelease: false
-          body: |
-            ## WA1Link ${{ github.ref_name }} - Linux
-
-            ### Downloads
-            - **AppImage** - Portable, run anywhere
-            - **DEB** - Debian/Ubuntu installer
-
-            ### Requirements
-            - Linux x64 (Ubuntu 20.04+, Debian 11+, or equivalent)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
