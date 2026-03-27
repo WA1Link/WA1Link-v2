@@ -42,7 +42,7 @@ export function createMainWindow(): BrowserWindow {
         if (isDev) {
           await mainWindow.loadURL(devUrl);
         } else {
-          await mainWindow.loadFile(path.join(__dirname, '../../build/index.html'));
+          await mainWindow.loadFile(path.join(__dirname, '../../../build/index.html'));
         }
 
         console.log('[Window] Loaded successfully');

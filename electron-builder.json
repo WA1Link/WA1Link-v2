@@ -25,7 +25,7 @@
         "arch": ["x64"]
       }
     ],
-    "icon": "build/icon.ico",
+    "icon": "build/logoWa1Link.ico",
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
   },
   "nsis": {
@@ -45,7 +45,7 @@
         "arch": ["universal"]
       }
     ],
-    "icon": "build/icon.icns",
+    "icon": "build/logoWa1Link.icns",
     "category": "public.app-category.business",
     "hardenedRuntime": true,
     "gatekeeperAssess": false,
