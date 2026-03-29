@@ -82,47 +82,60 @@ jobs:
           CSC_LINK: ${{ secrets.MAC_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
         run: |
-          # Decode certificate
           echo "$CSC_LINK" | base64 --decode > /tmp/cert.p12
-
-          # Create a new keychain
           security create-keychain -p "actions" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "actions" build.keychain
-
-          # Import certificate
           security import /tmp/cert.p12 -k build.keychain -P "$CSC_KEY_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
-
-          # Allow codesign to access keychain without UI prompt
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "actions" build.keychain
-
-          # Verify identity
           security find-identity -v -p codesigning build.keychain
-          echo "✅ Keychain setup complete"
-
           rm -f /tmp/cert.p12
 
-      - name: Test notarytool auth
-        run: |
-          xcrun notarytool history \
-            --apple-id "$APPLE_ID" \
-            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
-            --team-id "RL5P99J2T9" 2>&1 || true
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-
-      - name: Build macOS (sign + notarize)
-        timeout-minutes: 30
+      - name: Build macOS (sign only)
+        timeout-minutes: 15
         run: npx electron-builder --mac --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_KEYCHAIN: build.keychain
+          CSC_LINK: ${{ secrets.MAC_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+
+      - name: Notarize macOS app
+        timeout-minutes: 10
+        run: |
+          # Find the built zip files and app bundles
+          echo "=== Built artifacts ==="
+          ls -la dist-electron/
+
+          # Notarize arm64
+          if [ -d "dist-electron/mac-arm64/WA1Link.app" ]; then
+            echo "Notarizing arm64..."
+            ditto -c -k --keepParent "dist-electron/mac-arm64/WA1Link.app" /tmp/WA1Link-arm64.zip
+            xcrun notarytool submit /tmp/WA1Link-arm64.zip \
+              --apple-id "$APPLE_ID" \
+              --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+              --team-id "RL5P99J2T9" \
+              --wait --timeout 8m 2>&1
+            xcrun stapler staple "dist-electron/mac-arm64/WA1Link.app" 2>&1
+            rm /tmp/WA1Link-arm64.zip
+          fi
+
+          # Notarize x64
+          if [ -d "dist-electron/mac-x64/WA1Link.app" ]; then
+            echo "Notarizing x64..."
+            ditto -c -k --keepParent "dist-electron/mac-x64/WA1Link.app" /tmp/WA1Link-x64.zip
+            xcrun notarytool submit /tmp/WA1Link-x64.zip \
+              --apple-id "$APPLE_ID" \
+              --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+              --team-id "RL5P99J2T9" \
+              --wait --timeout 8m 2>&1
+            xcrun stapler staple "dist-electron/mac-x64/WA1Link.app" 2>&1
+            rm /tmp/WA1Link-x64.zip
+          fi
+
+          echo "=== Notarization complete ==="
+        env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: RL5P99J2T9
-          DEBUG: electron-builder
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
