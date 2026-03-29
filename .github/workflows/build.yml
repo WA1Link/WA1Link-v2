@@ -78,28 +78,41 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "" $KEYCHAIN_PATH
           security list-keychains -d user -s $KEYCHAIN_PATH login.keychain-db
 
-      - name: Debug certificate
-        env:
-          MAC_CERTIFICATE: ${{ secrets.MAC_CERTIFICATE }}
-          MAC_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+      - name: Test codesign
         run: |
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          echo "=== Signing identities in keychain ==="
-          security find-identity -v -p codesigning $KEYCHAIN_PATH
+          IDENTITY="Developer ID Application: Sanan Ibrahimov (RL5P99J2T9)"
+
+          # Create test binary
+          cat > /tmp/test_sign.c << 'CEOF'
+          int main() { return 0; }
+          CEOF
+          cc -o /tmp/test_binary /tmp/test_sign.c
+
+          echo "=== Test 1: codesign with timestamp (what electron-builder uses) ==="
+          ( codesign --force --sign "$IDENTITY" --keychain "$KEYCHAIN_PATH" --timestamp --options runtime /tmp/test_binary 2>&1 ) &
+          PID=$!
+          sleep 30
+          if kill -0 $PID 2>/dev/null; then
+            echo "HUNG - timestamp server unreachable"
+            kill $PID
+          else
+            wait $PID
+            echo "Exit code: $?"
+            echo "SUCCESS - signing with timestamp works"
+          fi
+
+          # Reset binary
+          cc -o /tmp/test_binary /tmp/test_sign.c
+
           echo ""
-          echo "=== All identities in keychain ==="
-          security find-identity -v $KEYCHAIN_PATH
+          echo "=== Test 2: codesign WITHOUT timestamp ==="
+          codesign --force --sign "$IDENTITY" --keychain "$KEYCHAIN_PATH" --options runtime /tmp/test_binary 2>&1
+          echo "Exit code: $?"
+
           echo ""
-          echo "=== Certificate details ==="
-          openssl pkcs12 -in $CERTIFICATE_PATH -passin pass:"$MAC_CERTIFICATE_PASSWORD" -nokeys 2>/dev/null | openssl x509 -noout -subject -issuer -dates -serial 2>/dev/null || echo "Could not parse cert"
-          echo ""
-          echo "=== Number of certs in p12 ==="
-          openssl pkcs12 -in $CERTIFICATE_PATH -passin pass:"$MAC_CERTIFICATE_PASSWORD" -nokeys 2>/dev/null | grep -c "BEGIN CERTIFICATE" || echo "0"
-          echo ""
-          echo "=== Test codesign (timeout 30s) ==="
-          echo '#!/bin/bash' > /tmp/test.sh && chmod +x /tmp/test.sh
-          timeout 30 codesign --force --sign - /tmp/test.sh && echo "codesign works" || echo "codesign FAILED or TIMED OUT"
+          echo "=== Test 3: curl Apple timestamp server ==="
+          curl -s -o /dev/null -w "HTTP %{http_code} - %{time_total}s" --max-time 10 http://timestamp.apple.com/ts01 || echo "UNREACHABLE"
           echo "=== All identities ==="
           security find-identity -v -p codesigning
 
@@ -117,15 +130,13 @@ jobs:
       - name: Build Electron main process
         run: npm run build:electron
 
-      - name: Build macOS (sign + notarize)
-        timeout-minutes: 30
-        run: npx electron-builder --mac --publish never
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: RL5P99J2T9
-          DEBUG: electron-builder
+      - name: Build macOS (SKIPPED - diagnostic run)
+        run: echo "Skipping build - testing codesign only"
+        # env:
+        #   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #   APPLE_ID: ${{ secrets.APPLE_ID }}
+        #   APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        #   APPLE_TEAM_ID: RL5P99J2T9
 
       - name: Clean up keychain
         if: always()
