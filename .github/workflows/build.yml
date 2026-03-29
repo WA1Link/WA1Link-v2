@@ -84,6 +84,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
         run: |
+          set +e
           echo "=== Checking secrets ==="
 
           # 1. MAC_CERTIFICATE (CSC_LINK) - should be base64 p12
@@ -91,14 +92,19 @@ jobs:
             echo "❌ MAC_CERTIFICATE is EMPTY"
           else
             echo "✅ MAC_CERTIFICATE is set (${#CSC_LINK} chars)"
-            # Try to decode and check if it's a valid p12
-            echo "$CSC_LINK" | base64 --decode > /tmp/cert.p12 2>/dev/null
+            echo "$CSC_LINK" | base64 --decode > /tmp/cert.p12 2>&1
             if [ $? -eq 0 ] && [ -s /tmp/cert.p12 ]; then
               echo "✅ MAC_CERTIFICATE is valid base64 ($(wc -c < /tmp/cert.p12) bytes decoded)"
-              # Try to read the p12 with the password
-              security import /tmp/cert.p12 -P "$CSC_KEY_PASSWORD" -T /usr/bin/codesign -k /tmp/test.keychain 2>/dev/null
-              if [ $? -eq 0 ]; then
+              # Create a temp keychain and try to import
+              security create-keychain -p "temppass" /tmp/test.keychain 2>&1
+              IMPORT_OUTPUT=$(security import /tmp/cert.p12 -P "$CSC_KEY_PASSWORD" -T /usr/bin/codesign -k /tmp/test.keychain 2>&1)
+              IMPORT_EXIT=$?
+              echo "Import exit code: $IMPORT_EXIT"
+              echo "Import output: $IMPORT_OUTPUT"
+              if [ $IMPORT_EXIT -eq 0 ]; then
                 echo "✅ MAC_CERTIFICATE_PASSWORD is correct - certificate imported successfully"
+                # Show certificate identity
+                security find-identity -v -p codesigning /tmp/test.keychain 2>&1
               else
                 echo "❌ MAC_CERTIFICATE_PASSWORD may be wrong - failed to import certificate"
               fi
