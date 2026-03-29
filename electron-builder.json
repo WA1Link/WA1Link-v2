@@ -42,10 +42,6 @@
       {
         "target": "zip",
         "arch": ["arm64"]
-      },
-      {
-        "target": "zip",
-        "arch": ["x64"]
       }
     ],
     "icon": "build/logoWa1Link.icns",
