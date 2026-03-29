@@ -42,6 +42,10 @@
       {
         "target": "zip",
         "arch": ["arm64"]
+      },
+      {
+        "target": "zip",
+        "arch": ["x64"]
       }
     ],
     "icon": "build/logoWa1Link.icns",
@@ -50,7 +54,7 @@
     "gatekeeperAssess": false,
     "entitlements": "assets/entitlements.mac.plist",
     "entitlementsInherit": "assets/entitlements.mac.plist",
-    "notarize": false,
+    "notarize": true,
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
   },
   "linux": {
