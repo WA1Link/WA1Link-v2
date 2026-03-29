@@ -79,10 +79,27 @@ jobs:
           security list-keychains -d user -s $KEYCHAIN_PATH login.keychain-db
 
       - name: Debug certificate
+        env:
+          MAC_CERTIFICATE: ${{ secrets.MAC_CERTIFICATE }}
+          MAC_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
         run: |
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          echo "=== Identities in keychain ==="
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          echo "=== Signing identities in keychain ==="
           security find-identity -v -p codesigning $KEYCHAIN_PATH
+          echo ""
+          echo "=== All identities in keychain ==="
+          security find-identity -v $KEYCHAIN_PATH
+          echo ""
+          echo "=== Certificate details ==="
+          openssl pkcs12 -in $CERTIFICATE_PATH -passin pass:"$MAC_CERTIFICATE_PASSWORD" -nokeys 2>/dev/null | openssl x509 -noout -subject -issuer -dates -serial 2>/dev/null || echo "Could not parse cert"
+          echo ""
+          echo "=== Number of certs in p12 ==="
+          openssl pkcs12 -in $CERTIFICATE_PATH -passin pass:"$MAC_CERTIFICATE_PASSWORD" -nokeys 2>/dev/null | grep -c "BEGIN CERTIFICATE" || echo "0"
+          echo ""
+          echo "=== Test codesign (timeout 30s) ==="
+          echo '#!/bin/bash' > /tmp/test.sh && chmod +x /tmp/test.sh
+          timeout 30 codesign --force --sign - /tmp/test.sh && echo "codesign works" || echo "codesign FAILED or TIMED OUT"
           echo "=== All identities ==="
           security find-identity -v -p codesigning
 
