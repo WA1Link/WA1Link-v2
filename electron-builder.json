@@ -40,10 +40,6 @@
   "mac": {
     "target": [
       {
-        "target": "dmg",
-        "arch": ["universal"]
-      },
-      {
         "target": "zip",
         "arch": ["universal"]
       }
@@ -56,12 +52,6 @@
     "entitlementsInherit": "assets/entitlements.mac.plist",
     "notarize": true,
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
-  },
-  "dmg": {
-    "contents": [
-      { "x": 130, "y": 220 },
-      { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
-    ]
   },
   "linux": {
     "target": [

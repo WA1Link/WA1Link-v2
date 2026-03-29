@@ -93,6 +93,7 @@ jobs:
         run: npm run build:electron
 
       - name: Build macOS (sign + notarize)
+        timeout-minutes: 45
         run: npx electron-builder --mac --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -109,7 +110,6 @@ jobs:
         with:
           name: mac-build
           path: |
-            dist-electron/*.dmg
             dist-electron/*.zip
             dist-electron/*.blockmap
             dist-electron/latest-mac.yml
@@ -169,7 +169,6 @@ jobs:
             ## WA1Link ${{ github.ref_name }} - macOS
 
             ### Downloads
-            - **DMG** - Drag and drop installer
             - **ZIP** - Direct application bundle
 
             ### Requirements
