@@ -100,15 +100,12 @@ jobs:
       - name: Build Electron main process
         run: npm run build:electron
 
-      - name: Build macOS (sign + notarize)
-        timeout-minutes: 30
+      - name: Build macOS (NO SIGN - test only)
+        timeout-minutes: 15
         run: npx electron-builder --mac --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: RL5P99J2T9
-          CSC_FOR_PULL_REQUEST: true
+          CSC_IDENTITY_AUTO_DISCOVERY: false
           DEBUG: electron-builder
 
       - name: Clean up keychain
