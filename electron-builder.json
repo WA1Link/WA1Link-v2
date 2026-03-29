@@ -52,8 +52,9 @@
     "category": "public.app-category.business",
     "hardenedRuntime": true,
     "gatekeeperAssess": false,
-    "entitlements": "build/entitlements.mac.plist",
-    "entitlementsInherit": "build/entitlements.mac.plist",
+    "entitlements": "assets/entitlements.mac.plist",
+    "entitlementsInherit": "assets/entitlements.mac.plist",
+    "notarize": true,
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
   },
   "dmg": {
