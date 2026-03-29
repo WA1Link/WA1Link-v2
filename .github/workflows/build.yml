@@ -78,6 +78,14 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "" $KEYCHAIN_PATH
           security list-keychains -d user -s $KEYCHAIN_PATH login.keychain-db
 
+      - name: Debug certificate
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          echo "=== Identities in keychain ==="
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
+          echo "=== All identities ==="
+          security find-identity -v -p codesigning
+
       - name: Install dependencies
         run: npm ci
 
@@ -93,13 +101,15 @@ jobs:
         run: npm run build:electron
 
       - name: Build macOS (sign + notarize)
-        timeout-minutes: 45
+        timeout-minutes: 30
         run: npx electron-builder --mac --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: RL5P99J2T9
+          CSC_FOR_PULL_REQUEST: true
+          DEBUG: electron-builder
 
       - name: Clean up keychain
         if: always()
