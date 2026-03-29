@@ -172,7 +172,7 @@ jobs:
             - **ZIP** - Direct application bundle
 
             ### Requirements
-            - macOS 11 (Big Sur) or later (Universal: Intel + Apple Silicon)
+            - macOS 11 (Big Sur) or later (Intel + Apple Silicon)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
