@@ -99,44 +99,6 @@ jobs:
           CSC_LINK: ${{ secrets.MAC_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
 
-      - name: Notarize macOS app
-        timeout-minutes: 10
-        run: |
-          # Find the built zip files and app bundles
-          echo "=== Built artifacts ==="
-          ls -la dist-electron/
-
-          # Notarize arm64
-          if [ -d "dist-electron/mac-arm64/WA1Link.app" ]; then
-            echo "Notarizing arm64..."
-            ditto -c -k --keepParent "dist-electron/mac-arm64/WA1Link.app" /tmp/WA1Link-arm64.zip
-            xcrun notarytool submit /tmp/WA1Link-arm64.zip \
-              --apple-id "$APPLE_ID" \
-              --password "$APPLE_APP_SPECIFIC_PASSWORD" \
-              --team-id "RL5P99J2T9" \
-              --wait --timeout 8m 2>&1
-            xcrun stapler staple "dist-electron/mac-arm64/WA1Link.app" 2>&1
-            rm /tmp/WA1Link-arm64.zip
-          fi
-
-          # Notarize x64
-          if [ -d "dist-electron/mac-x64/WA1Link.app" ]; then
-            echo "Notarizing x64..."
-            ditto -c -k --keepParent "dist-electron/mac-x64/WA1Link.app" /tmp/WA1Link-x64.zip
-            xcrun notarytool submit /tmp/WA1Link-x64.zip \
-              --apple-id "$APPLE_ID" \
-              --password "$APPLE_APP_SPECIFIC_PASSWORD" \
-              --team-id "RL5P99J2T9" \
-              --wait --timeout 8m 2>&1
-            xcrun stapler staple "dist-electron/mac-x64/WA1Link.app" 2>&1
-            rm /tmp/WA1Link-x64.zip
-          fi
-
-          echo "=== Notarization complete ==="
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
