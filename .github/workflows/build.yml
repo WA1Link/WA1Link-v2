@@ -77,6 +77,71 @@ jobs:
       - name: Build Electron main process
         run: npm run build:electron
 
+      - name: Validate secrets
+        env:
+          CSC_LINK: ${{ secrets.MAC_CERTIFICATE }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: |
+          echo "=== Checking secrets ==="
+
+          # 1. MAC_CERTIFICATE (CSC_LINK) - should be base64 p12
+          if [ -z "$CSC_LINK" ]; then
+            echo "❌ MAC_CERTIFICATE is EMPTY"
+          else
+            echo "✅ MAC_CERTIFICATE is set (${#CSC_LINK} chars)"
+            # Try to decode and check if it's a valid p12
+            echo "$CSC_LINK" | base64 --decode > /tmp/cert.p12 2>/dev/null
+            if [ $? -eq 0 ] && [ -s /tmp/cert.p12 ]; then
+              echo "✅ MAC_CERTIFICATE is valid base64 ($(wc -c < /tmp/cert.p12) bytes decoded)"
+              # Try to read the p12 with the password
+              security import /tmp/cert.p12 -P "$CSC_KEY_PASSWORD" -T /usr/bin/codesign -k /tmp/test.keychain 2>/dev/null
+              if [ $? -eq 0 ]; then
+                echo "✅ MAC_CERTIFICATE_PASSWORD is correct - certificate imported successfully"
+              else
+                echo "❌ MAC_CERTIFICATE_PASSWORD may be wrong - failed to import certificate"
+              fi
+              rm -f /tmp/cert.p12
+              security delete-keychain /tmp/test.keychain 2>/dev/null
+            else
+              echo "❌ MAC_CERTIFICATE is NOT valid base64 - did you run: base64 -i certificate.p12?"
+            fi
+          fi
+
+          # 2. MAC_CERTIFICATE_PASSWORD
+          if [ -z "$CSC_KEY_PASSWORD" ]; then
+            echo "❌ MAC_CERTIFICATE_PASSWORD is EMPTY"
+          else
+            echo "✅ MAC_CERTIFICATE_PASSWORD is set (${#CSC_KEY_PASSWORD} chars)"
+          fi
+
+          # 3. APPLE_ID
+          if [ -z "$APPLE_ID" ]; then
+            echo "❌ APPLE_ID is EMPTY"
+          else
+            echo "✅ APPLE_ID is set (${#APPLE_ID} chars)"
+            if echo "$APPLE_ID" | grep -q '@'; then
+              echo "✅ APPLE_ID looks like an email"
+            else
+              echo "⚠️  APPLE_ID does not contain '@' - should be your Apple Developer email"
+            fi
+          fi
+
+          # 4. APPLE_APP_SPECIFIC_PASSWORD
+          if [ -z "$APPLE_APP_SPECIFIC_PASSWORD" ]; then
+            echo "❌ APPLE_APP_SPECIFIC_PASSWORD is EMPTY"
+          else
+            echo "✅ APPLE_APP_SPECIFIC_PASSWORD is set (${#APPLE_APP_SPECIFIC_PASSWORD} chars)"
+            if echo "$APPLE_APP_SPECIFIC_PASSWORD" | grep -qE '^[a-z]{4}-[a-z]{4}-[a-z]{4}-[a-z]{4}$'; then
+              echo "✅ APPLE_APP_SPECIFIC_PASSWORD matches expected format (xxxx-xxxx-xxxx-xxxx)"
+            else
+              echo "⚠️  APPLE_APP_SPECIFIC_PASSWORD format unexpected - should be like: abcd-efgh-ijkl-mnop"
+            fi
+          fi
+
+          echo "=== Done ==="
+
       - name: Build macOS (sign + notarize)
         timeout-minutes: 45
         run: npx electron-builder --mac --publish never
