@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface DropdownOption {
   value: string;
@@ -28,13 +29,18 @@ export const Dropdown: React.FC<DropdownProps> = ({
   className = '',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+        menuRef.current && !menuRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -42,6 +48,20 @@ export const Dropdown: React.FC<DropdownProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Position the portal menu below the button
+  useLayoutEffect(() => {
+    if (isOpen && dropdownRef.current) {
+      const rect = dropdownRef.current.getBoundingClientRect();
+      setMenuStyle({
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        zIndex: 9999,
+      });
+    }
+  }, [isOpen]);
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
@@ -74,8 +94,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
         </span>
       </button>
 
-      {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+      {isOpen && createPortal(
+        <div ref={menuRef} style={menuStyle} className="bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
           {options.map((option) => (
             <button
               key={option.value}
@@ -95,7 +115,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
               {option.label}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
 
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}

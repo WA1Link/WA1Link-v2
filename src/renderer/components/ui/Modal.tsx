@@ -58,7 +58,7 @@ export const Modal: React.FC<ModalProps> = ({
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className={`relative bg-white rounded-xl shadow-xl w-full ${sizeClasses[size]} transform transition-all`}
+          className={`relative bg-white rounded-xl shadow-xl w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col transform transition-all`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -84,7 +84,7 @@ export const Modal: React.FC<ModalProps> = ({
           )}
 
           {/* Content */}
-          <div className="px-6 py-4">{children}</div>
+          <div className="px-6 py-4 overflow-y-auto flex-1 min-h-0">{children}</div>
         </div>
       </div>
     </div>
@@ -97,7 +97,7 @@ interface ModalFooterProps {
 
 export const ModalFooter: React.FC<ModalFooterProps> = ({ children }) => {
   return (
-    <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-xl -mx-6 -mb-4 mt-4">
+    <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-xl -mx-6 -mb-4 mt-4 sticky bottom-[-16px]">
       {children}
     </div>
   );

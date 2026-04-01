@@ -56,7 +56,7 @@ export const MessageTemplateList: React.FC<MessageTemplateListProps> = ({
           {/* Template card */}
           <div
             className={`
-              card flex-1 transition-all
+              card flex-1 min-w-0 transition-all
               ${template.isSelected ? 'ring-2 ring-whatsapp-light bg-whatsapp-light bg-opacity-5' : 'hover:shadow-md'}
             `}
           >

@@ -44,7 +44,7 @@ export const CampaignLauncher: React.FC<CampaignLauncherProps> = ({
       <h3 className="font-semibold text-gray-900 mb-4">Launch Campaign</h3>
 
       {/* Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="p-3 bg-gray-50 rounded-lg text-center">
           <p className="text-2xl font-bold text-gray-900">{selectedTemplates.length}</p>
           <p className="text-xs text-gray-500">Templates</p>
@@ -52,12 +52,6 @@ export const CampaignLauncher: React.FC<CampaignLauncherProps> = ({
         <div className="p-3 bg-gray-50 rounded-lg text-center">
           <p className="text-2xl font-bold text-gray-900">{targets.length}</p>
           <p className="text-xs text-gray-500">Recipients</p>
-        </div>
-        <div className="p-3 bg-gray-50 rounded-lg text-center">
-          <p className="text-2xl font-bold text-gray-900">
-            {selectedTemplates.reduce((acc, t) => acc + t.contents.length, 0)}
-          </p>
-          <p className="text-xs text-gray-500">Messages/Person</p>
         </div>
         <div className="p-3 bg-gray-50 rounded-lg text-center">
           <p className="text-2xl font-bold text-gray-900">{estimatedTime()}</p>

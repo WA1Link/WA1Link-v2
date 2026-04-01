@@ -31,37 +31,6 @@ export const TargetList: React.FC<TargetListProps> = ({ targets, onClear }) => {
       header: 'Name',
       render: (item: Target) => item.name || <span className="text-gray-400">—</span>,
     },
-    {
-      key: 'customFields',
-      header: 'Custom Fields',
-      render: (item: Target) => {
-        const fields = Object.entries(item.customFields);
-        if (fields.length === 0) return <span className="text-gray-400">—</span>;
-        return (
-          <div className="flex flex-wrap gap-1">
-            {fields.slice(0, 2).map(([key, value]) => (
-              <span
-                key={key}
-                className="px-2 py-0.5 bg-gray-100 rounded text-xs text-gray-600"
-                title={`${key}: ${value}`}
-              >
-                {key}: {value.slice(0, 15)}
-                {value.length > 15 ? '...' : ''}
-              </span>
-            ))}
-            {fields.length > 2 && (
-              <span className="text-xs text-gray-400">+{fields.length - 2}</span>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      render: (item: Target) => getStatusBadge(item.status),
-      className: 'w-24',
-    },
   ];
 
   if (targets.length === 0) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAccountStore } from '../../stores/useAccountStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { useLicenseStore } from '../../stores/useLicenseStore';
@@ -35,6 +35,11 @@ export const AccountManager: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [connectingAccountId, setConnectingAccountId] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const connectingAccountIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    connectingAccountIdRef.current = connectingAccountId;
+  }, [connectingAccountId]);
 
   // Set up IPC listeners
   useEffect(() => {
@@ -47,6 +52,14 @@ export const AccountManager: React.FC = () => {
         clearQRCode(connection.accountId);
         clearPairingCode(connection.accountId);
         addToast({ type: 'success', message: 'Connected to WhatsApp' });
+      } else if (connection.status === 'logged_out') {
+        setConnectingAccountId(null);
+        setIsConnecting(false);
+        clearQRCode(connection.accountId);
+        clearPairingCode(connection.accountId);
+        addToast({ type: 'error', message: 'Session expired. Please connect again.' });
+      } else if (connection.status === 'disconnected' && connectingAccountIdRef.current === connection.accountId) {
+        setIsConnecting(false);
       }
     });
 
@@ -96,12 +109,17 @@ export const AccountManager: React.FC = () => {
     }
   };
 
-  const handleCloseConnect = () => {
+  const handleCloseConnect = async () => {
+    const accountId = connectingAccountId;
     setConnectingAccountId(null);
     setIsConnecting(false);
-    if (connectingAccountId) {
-      clearQRCode(connectingAccountId);
-      clearPairingCode(connectingAccountId);
+    if (accountId) {
+      clearQRCode(accountId);
+      clearPairingCode(accountId);
+      // Stop the active connection attempt so the button spinner resets
+      try {
+        await disconnect(accountId);
+      } catch {}
     }
   };
 

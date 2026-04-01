@@ -1,4 +1,4 @@
-import { BrowserWindow, app, Menu } from 'electron';
+import { BrowserWindow, app, Menu, shell } from 'electron';
 import path from 'path';
 import os from 'os';
 
@@ -98,6 +98,12 @@ export function createMainWindow(): BrowserWindow {
   setTimeout(() => {
     loadApp();
   }, isDev ? 2000 : 0);
+
+  // Open external links in the system browser
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
 
   if (isDev) {
     mainWindow.webContents.openDevTools();

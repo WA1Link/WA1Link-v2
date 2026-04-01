@@ -302,7 +302,7 @@ export const MessagingPage: React.FC = () => {
                   {content.contentType === 'text' ? (
                     <div>
                       <span className="text-xs font-medium text-gray-400 uppercase">Text</span>
-                      <p className="mt-1 text-sm text-gray-800 whitespace-pre-wrap">{content.contentValue}</p>
+                      <p className="mt-1 text-sm text-gray-800 whitespace-pre-wrap break-words">{content.contentValue}</p>
                     </div>
                   ) : (
                     <div>

@@ -1,8 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
-import os from 'os';
 import { EventEmitter } from 'events';
-import { BrowserWindow } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import { ConnectionStatus, Account } from '../../../shared/types';
 import { phoneNormalizer } from '../phone/normalizer.service';
 import { accountRepository } from '../../database/repositories/account.repository';
@@ -57,10 +56,9 @@ function getStore() {
 // Logger - use console for now
 const logger = { level: 'error', info: () => {}, error: console.error, warn: console.warn, debug: () => {}, trace: () => {}, fatal: console.error, child: () => logger };
 
-// Session directory configuration
-const SESSIONS_DIR = os.platform() === 'darwin'
-  ? path.join(os.homedir(), 'wa1link-sessions')
-  : './auth_sessions';
+// Session directory — store inside Electron's userData so it lives outside the
+// project tree (avoids electronmon restart loops on credential file changes).
+const getSessionsDir = () => path.join(app.getPath('userData'), 'auth_sessions');
 
 const MAX_BACKOFF_MS = 30_000;
 const MAX_RECONNECT_ATTEMPTS = 10;
@@ -119,7 +117,7 @@ export class SocketService extends EventEmitter {
    * Get session path for account
    */
   private sessionPathFor(accountId: string): string {
-    return path.join(SESSIONS_DIR, 'wa1link-whatsapp-auth', accountId);
+    return path.join(getSessionsDir(), 'wa1link-whatsapp-auth', accountId);
   }
 
   /**
