@@ -197,6 +197,41 @@ export class CustomerRepository {
     const db = getDatabase();
     return (db.prepare('SELECT COUNT(*) as count FROM customers').get() as { count: number }).count;
   }
+
+  /**
+   * Find a customer by normalized phone number.
+   * Returns null if not found.
+   */
+  findByPhone(phone: string): Customer | null {
+    const db = getDatabase();
+    const normalized = normalizePhoneNumber(phone);
+    const row = db.prepare('SELECT * FROM customers WHERE phone_number = ?').get(normalized) as CustomerRow | undefined;
+    return row ? rowToCustomer(row) : null;
+  }
+
+  /**
+   * Ensure a contact exists in CRM. If the phone number doesn't exist,
+   * create a new customer with status "Potensial müştəri".
+   * If it already exists, skip silently.
+   * Returns { created: boolean } to track stats.
+   */
+  ensureContact(phone: string, name: string): { created: boolean } {
+    const db = getDatabase();
+    const normalized = normalizePhoneNumber(phone);
+
+    const existing = db.prepare('SELECT 1 FROM customers WHERE phone_number = ?').get(normalized);
+    if (existing) {
+      return { created: false };
+    }
+
+    const id = uuidv4();
+    db.prepare(`
+      INSERT OR IGNORE INTO customers (id, full_name, phone_number, status, notes)
+      VALUES (?, ?, ?, ?, NULL)
+    `).run(id, name || normalized, normalized, DEFAULT_CUSTOMER_STATUS);
+
+    return { created: true };
+  }
 }
 
 export const customerRepository = new CustomerRepository();

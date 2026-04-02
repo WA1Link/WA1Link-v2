@@ -40,12 +40,18 @@ export const DEFAULT_DELAY_CONFIG: DelayConfig = {
   batchDelayMax: 20000,
 };
 
+export interface CRMSyncStats {
+  newContacts: number;
+  skippedContacts: number;
+}
+
 export interface SendingProgress {
   total: number;
   sent: number;
   failed: number;
   currentTarget?: string;
   errors: Array<{ phoneNumber: string; error: string }>;
+  crmStats?: CRMSyncStats;
 }
 
 export interface BulkSendRequest {

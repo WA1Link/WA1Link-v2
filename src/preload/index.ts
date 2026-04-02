@@ -81,6 +81,7 @@ const electronAPI: ElectronAPI = {
     activate: (licenseString) => ipcRenderer.invoke(IPC_CHANNELS.LICENSE.ACTIVATE, licenseString),
     getState: () => ipcRenderer.invoke(IPC_CHANNELS.LICENSE.GET_STATE),
     getFingerprint: () => ipcRenderer.invoke(IPC_CHANNELS.LICENSE.GET_FINGERPRINT),
+    openLicensePage: () => ipcRenderer.invoke(IPC_CHANNELS.LICENSE.OPEN_LICENSE_PAGE),
   },
 
   customer: {

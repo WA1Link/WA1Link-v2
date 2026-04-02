@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { DelayConfig, SendingProgress, DEFAULT_DELAY_CONFIG } from '../../shared/types';
+import { DelayConfig, SendingProgress, CRMSyncStats, DEFAULT_DELAY_CONFIG } from '../../shared/types';
 
 interface SendingState {
   isSending: boolean;
@@ -18,7 +18,7 @@ interface SendingActions {
 
   // Progress updates
   updateProgress: (progress: SendingProgress) => void;
-  onSendingComplete: (result: { sent: number; failed: number }) => void;
+  onSendingComplete: (result: { sent: number; failed: number; crmStats?: CRMSyncStats }) => void;
   resetProgress: () => void;
 
   // Delay config
@@ -90,6 +90,7 @@ export const useSendingStore = create<SendingStore>((set, get) => ({
         ...get().progress!,
         sent: result.sent,
         failed: result.failed,
+        crmStats: result.crmStats,
       },
     });
   },

@@ -1,6 +1,7 @@
 import { Account, AccountConnection, CreateAccountInput } from './account.types';
 import {
   BulkSendRequest,
+  CRMSyncStats,
   CreateTemplateInput,
   MessageTemplate,
   SendingProgress,
@@ -52,7 +53,7 @@ export interface MessageAPI {
   stopSending: () => Promise<void>;
   selectImage: () => Promise<string | null>;
   onProgress: (callback: (progress: SendingProgress) => void) => () => void;
-  onComplete: (callback: (result: { sent: number; failed: number }) => void) => () => void;
+  onComplete: (callback: (result: { sent: number; failed: number; crmStats?: CRMSyncStats }) => void) => () => void;
 }
 
 // Contact IPC
@@ -81,6 +82,7 @@ export interface LicenseAPI {
   activate: (licenseString: string) => Promise<LicenseState>;
   getState: () => Promise<LicenseState>;
   getFingerprint: () => Promise<string>;
+  openLicensePage: () => Promise<void>;
 }
 
 // Customer CRM IPC

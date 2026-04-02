@@ -65,7 +65,10 @@ export const MessagingPage: React.FC = () => {
 
     const unsubComplete = window.electronAPI.message.onComplete((result) => {
       onSendingComplete(result);
-      addToast({ type: 'success', message: `Sending complete: ${result.sent} sent, ${result.failed} failed` });
+      const crmInfo = result.crmStats
+        ? ` | CRM: ${result.crmStats.newContacts} new, ${result.crmStats.skippedContacts} existing`
+        : '';
+      addToast({ type: 'success', message: `Sending complete: ${result.sent} sent, ${result.failed} failed${crmInfo}` });
     });
 
     return () => {

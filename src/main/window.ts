@@ -4,7 +4,7 @@ import os from 'os';
 
 let mainWindow: BrowserWindow | null = null;
 
-function getIconPath(): string {
+export function getIconPath(): string {
   // In dev: src/main/ compiles to dist/main/main/, so go 3 levels up
   // In prod: files are inside app.asar, __dirname is inside resources/app.asar/dist/main/main
   const base = path.join(__dirname, '../../..');

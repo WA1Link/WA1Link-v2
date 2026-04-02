@@ -11,6 +11,8 @@ import {
   DEFAULT_DELAY_CONFIG,
 } from '../../../shared/types';
 import { messageRepository } from '../../database/repositories/message.repository';
+import { customerRepository } from '../../database/repositories/customer.repository';
+import { CRMSyncStats } from '../../../shared/types';
 
 interface MessageContent {
   type: 'text' | 'image';
@@ -173,11 +175,17 @@ export class MessageService extends EventEmitter {
       return;
     }
 
+    const crmStats: CRMSyncStats = {
+      newContacts: 0,
+      skippedContacts: 0,
+    };
+
     const progress: SendingProgress = {
       total: targets.length,
       sent: 0,
       failed: 0,
       errors: [],
+      crmStats,
     };
 
     let messageCount = 0;
@@ -214,6 +222,22 @@ export class MessageService extends EventEmitter {
         }
 
         progress.sent++;
+
+        // CRM auto-save: ensure contact exists (non-blocking, fire-and-forget)
+        try {
+          const result = customerRepository.ensureContact(
+            target.phoneNumber,
+            target.name
+          );
+          if (result.created) {
+            crmStats.newContacts++;
+          } else {
+            crmStats.skippedContacts++;
+          }
+        } catch {
+          // CRM sync failure should never block message sending
+          crmStats.skippedContacts++;
+        }
       } catch (error) {
         progress.failed++;
         progress.errors.push({
@@ -224,6 +248,7 @@ export class MessageService extends EventEmitter {
 
       messageCount++;
       progress.currentTarget = target.name;
+      progress.crmStats = { ...crmStats };
 
       // Emit progress
       this.emit('progress', { ...progress });
@@ -247,6 +272,7 @@ export class MessageService extends EventEmitter {
     this.emit('complete', {
       sent: progress.sent,
       failed: progress.failed,
+      crmStats: { ...crmStats },
     });
   }
 

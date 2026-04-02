@@ -72,6 +72,20 @@ export const SendingProgressComponent: React.FC<SendingProgressProps> = ({
             </div>
           </div>
 
+          {/* CRM Sync Stats */}
+          {progress?.crmStats && (progress.crmStats.newContacts > 0 || progress.crmStats.skippedContacts > 0) && (
+            <div className="grid grid-cols-2 gap-4 text-center mt-3">
+              <div className="p-2 bg-indigo-50 rounded-lg">
+                <p className="text-lg font-bold text-indigo-600">{progress.crmStats.newContacts}</p>
+                <p className="text-xs text-gray-500">New CRM Contacts</p>
+              </div>
+              <div className="p-2 bg-gray-50 rounded-lg">
+                <p className="text-lg font-bold text-gray-500">{progress.crmStats.skippedContacts}</p>
+                <p className="text-xs text-gray-500">Already in CRM</p>
+              </div>
+            </div>
+          )}
+
           {progress?.currentTarget && isSending && (
             <p className="text-sm text-gray-500">
               Current: {progress.currentTarget}
