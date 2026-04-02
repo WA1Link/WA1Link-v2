@@ -10,11 +10,60 @@ permissions:
   contents: write
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version
+        id: resolve
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            TAG="${{ github.ref_name }}"
+            VERSION="${TAG#v}"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+            echo "Using tag version: $VERSION"
+          else
+            CURRENT=$(node -p "require('./package.json').version")
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+            PATCH=$((PATCH + 1))
+            VERSION="$MAJOR.$MINOR.$PATCH"
+            TAG="v$VERSION"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+            echo "Auto-bumped version: $CURRENT -> $VERSION"
+
+            # Update package.json
+            node -e "
+              const fs = require('fs');
+              const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+              pkg.version = '$VERSION';
+              fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+            "
+
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add package.json
+            git commit -m "chore: auto-bump version to $VERSION"
+            git tag "$TAG"
+            git push origin HEAD:main "$TAG"
+          fi
+
   build-windows:
+    needs: version
     runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.tag }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -52,10 +101,13 @@ jobs:
           retention-days: 30
 
   build-mac:
+    needs: version
     runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.tag }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -110,9 +162,8 @@ jobs:
           retention-days: 30
 
   release-windows:
-    needs: build-windows
+    needs: [version, build-windows]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:
       - name: Download Windows artifacts
         uses: actions/download-artifact@v4
@@ -123,13 +174,13 @@ jobs:
       - name: Create Windows Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}-windows
-          name: "${{ github.ref_name }} - Windows"
+          tag_name: ${{ needs.version.outputs.tag }}-windows
+          name: "${{ needs.version.outputs.tag }} - Windows"
           files: artifacts/**/*
           draft: false
           prerelease: false
           body: |
-            ## WA1Link ${{ github.ref_name }} - Windows
+            ## WA1Link ${{ needs.version.outputs.tag }} - Windows
 
             ### Downloads
             - **NSIS Installer** (.exe) - Full installer with options
@@ -141,9 +192,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   release-mac:
-    needs: build-mac
+    needs: [version, build-mac]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:
       - name: Download macOS artifacts
         uses: actions/download-artifact@v4
@@ -154,13 +204,13 @@ jobs:
       - name: Create macOS Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}-macos
-          name: "${{ github.ref_name }} - macOS"
+          tag_name: ${{ needs.version.outputs.tag }}-macos
+          name: "${{ needs.version.outputs.tag }} - macOS"
           files: artifacts/**/*
           draft: false
           prerelease: false
           body: |
-            ## WA1Link ${{ github.ref_name }} - macOS
+            ## WA1Link ${{ needs.version.outputs.tag }} - macOS
 
             ### Downloads
             - **ZIP** - Direct application bundle
