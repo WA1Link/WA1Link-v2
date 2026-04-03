@@ -38,6 +38,8 @@ export function registerLicenseIPC(mainWindow: BrowserWindow): void {
 
   // Open license purchase page in a new window
   ipcMain.handle(channels.OPEN_LICENSE_PAGE, async (): Promise<void> => {
+    const fingerprint = licenseService.getFingerprint();
+
     const licenseWindow = new BrowserWindow({
       width: 1000,
       height: 700,
@@ -52,7 +54,7 @@ export function registerLicenseIPC(mainWindow: BrowserWindow): void {
     });
 
     licenseWindow.setMenuBarVisibility(false);
-    licenseWindow.loadURL('https://1link.so/payment_toplu_mesaj');
+    licenseWindow.loadURL(`https://1link.so/payment_toplu_mesaj?code=${fingerprint}`);
   });
 
   // Periodic re-validation every hour
