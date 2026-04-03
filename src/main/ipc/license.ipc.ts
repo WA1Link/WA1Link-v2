@@ -45,6 +45,9 @@ export function registerLicenseIPC(mainWindow: BrowserWindow): void {
       height: 700,
       parent: mainWindow,
       modal: true,
+      closable: true,
+      minimizable: false,
+      maximizable: false,
       title: 'Get a License',
       icon: getIconPath(),
       webPreferences: {
@@ -54,6 +57,14 @@ export function registerLicenseIPC(mainWindow: BrowserWindow): void {
     });
 
     licenseWindow.setMenuBarVisibility(false);
+
+    // Allow closing with Escape key
+    licenseWindow.webContents.on('before-input-event', (_event, input) => {
+      if (input.key === 'Escape') {
+        licenseWindow.close();
+      }
+    });
+
     licenseWindow.loadURL(`https://1link.so/payment_toplu_mesaj?code=${fingerprint}`);
   });
 
