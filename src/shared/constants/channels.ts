@@ -67,6 +67,11 @@ export const IPC_CHANNELS = {
     DELETE: 'payment:delete',
     EXPORT: 'payment:export',
   },
+  UPDATE: {
+    AVAILABLE: 'update:available',
+    DOWNLOADED: 'update:downloaded',
+    INSTALL: 'update:install',
+  },
 } as const;
 
 export type IPCChannels = typeof IPC_CHANNELS;

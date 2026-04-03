@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { autoUpdater } from 'electron-updater';
 import { createMainWindow, getMainWindow } from './window';
@@ -6,6 +6,7 @@ import { initDatabase, closeDatabase } from './database';
 import { registerAllIPC } from './ipc';
 import { socketService } from './services/whatsapp/socket.service';
 import { schedulerService } from './services/scheduler/scheduler.service';
+import { IPC_CHANNELS } from '../shared/constants/channels';
 
 // Use a different userData path to avoid GPU cache lock issues
 const isDev = !app.isPackaged;
@@ -78,16 +79,21 @@ app.whenReady().then(async () => {
 // Handle auto-updater events
 autoUpdater.on('update-available', (info) => {
   const mainWindow = getMainWindow();
-  mainWindow?.webContents.send('update:available', info);
+  mainWindow?.webContents.send(IPC_CHANNELS.UPDATE.AVAILABLE, info);
 });
 
 autoUpdater.on('update-downloaded', (info) => {
   const mainWindow = getMainWindow();
-  mainWindow?.webContents.send('update:downloaded', info);
+  mainWindow?.webContents.send(IPC_CHANNELS.UPDATE.DOWNLOADED, info);
 });
 
 autoUpdater.on('error', (error) => {
   console.error('Auto-update error:', error);
+});
+
+// Handle update install request
+ipcMain.handle(IPC_CHANNELS.UPDATE.INSTALL, () => {
+  autoUpdater.quitAndInstall();
 });
 
 // Quit when all windows are closed

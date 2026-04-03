@@ -85,20 +85,10 @@ jobs:
       - name: Build Electron main process
         run: npm run build:electron
 
-      - name: Build Windows
-        run: npx electron-builder --win --publish never
+      - name: Build & Publish Windows
+        run: npx electron-builder --win --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: win-build
-          path: |
-            dist-electron/*.exe
-            dist-electron/*.blockmap
-            dist-electron/latest.yml
-          retention-days: 30
 
   build-mac:
     needs: version
@@ -143,80 +133,10 @@ jobs:
           security find-identity -v -p codesigning build.keychain
           rm -f /tmp/cert.p12
 
-      - name: Build macOS (sign only)
+      - name: Build & Publish macOS
         timeout-minutes: 15
-        run: npx electron-builder --mac --publish never
+        run: npx electron-builder --mac --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_LINK: ${{ secrets.MAC_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: mac-build
-          path: |
-            dist-electron/*.zip
-            dist-electron/*.blockmap
-            dist-electron/latest-mac.yml
-          retention-days: 30
-
-  release-windows:
-    needs: [version, build-windows]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download Windows artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: win-build
-          path: artifacts
-
-      - name: Create Windows Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.version.outputs.tag }}-windows
-          name: "${{ needs.version.outputs.tag }} - Windows"
-          files: artifacts/**/*
-          draft: false
-          prerelease: false
-          body: |
-            ## WA1Link ${{ needs.version.outputs.tag }} - Windows
-
-            ### Downloads
-            - **NSIS Installer** (.exe) - Full installer with options
-            - **Portable** (.exe) - No installation required
-
-            ### Requirements
-            - Windows 10 or later (x64)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  release-mac:
-    needs: [version, build-mac]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download macOS artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: mac-build
-          path: artifacts
-
-      - name: Create macOS Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.version.outputs.tag }}-macos
-          name: "${{ needs.version.outputs.tag }} - macOS"
-          files: artifacts/**/*
-          draft: false
-          prerelease: false
-          body: |
-            ## WA1Link ${{ needs.version.outputs.tag }} - macOS
-
-            ### Downloads
-            - **ZIP** - Direct application bundle
-
-            ### Requirements
-            - macOS 11 (Big Sur) or later (Intel + Apple Silicon)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

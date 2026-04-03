@@ -110,6 +110,20 @@ const electronAPI: ElectronAPI = {
     delete: (id) => ipcRenderer.invoke(IPC_CHANNELS.PAYMENT.DELETE, id),
     export: (filter) => ipcRenderer.invoke(IPC_CHANNELS.PAYMENT.EXPORT, filter),
   },
+
+  update: {
+    onUpdateAvailable: (callback) => {
+      const handler = (_: Electron.IpcRendererEvent, data: any) => callback(data);
+      ipcRenderer.on(IPC_CHANNELS.UPDATE.AVAILABLE, handler);
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.UPDATE.AVAILABLE, handler);
+    },
+    onUpdateDownloaded: (callback) => {
+      const handler = (_: Electron.IpcRendererEvent, data: any) => callback(data);
+      ipcRenderer.on(IPC_CHANNELS.UPDATE.DOWNLOADED, handler);
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.UPDATE.DOWNLOADED, handler);
+    },
+    install: () => ipcRenderer.invoke(IPC_CHANNELS.UPDATE.INSTALL),
+  },
 };
 
 // Expose API to renderer

@@ -80,6 +80,22 @@
   @apply bg-gray-300 rounded hover:bg-gray-400;
 }
 
+/* Update notification animation */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
 /* QR Code styling */
 .qr-container {
   @apply bg-white p-4 rounded-lg shadow-lg inline-block;

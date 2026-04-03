@@ -2,6 +2,7 @@ import React from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { ToastContainer } from '../ui/Toast';
+import { UpdateNotification } from '../ui/UpdateNotification';
 import { useUIStore } from '../../stores/useUIStore';
 
 interface AppShellProps {
@@ -28,6 +29,9 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
       {/* Toast Notifications */}
       <ToastContainer />
+
+      {/* Update Notification */}
+      <UpdateNotification />
     </div>
   );
 };

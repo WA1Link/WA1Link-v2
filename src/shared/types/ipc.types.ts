@@ -115,6 +115,13 @@ export interface PaymentAPI {
   export: (filter?: PaymentFilter) => Promise<string>;
 }
 
+// Update API
+export interface UpdateAPI {
+  onUpdateAvailable: (callback: (info: { version: string }) => void) => () => void;
+  onUpdateDownloaded: (callback: (info: { version: string }) => void) => () => void;
+  install: () => Promise<void>;
+}
+
 // Combined API exposed to renderer
 export interface ElectronAPI {
   account: AccountAPI;
@@ -125,6 +132,7 @@ export interface ElectronAPI {
   customer: CustomerAPI;
   product: ProductAPI;
   payment: PaymentAPI;
+  update: UpdateAPI;
 }
 
 declare global {
