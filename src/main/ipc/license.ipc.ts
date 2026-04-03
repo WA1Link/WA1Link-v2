@@ -40,12 +40,13 @@ export function registerLicenseIPC(mainWindow: BrowserWindow): void {
   ipcMain.handle(channels.OPEN_LICENSE_PAGE, async (): Promise<void> => {
     const fingerprint = licenseService.getFingerprint();
 
+    const isMac = process.platform === 'darwin';
+
     const licenseWindow = new BrowserWindow({
       width: 1000,
       height: 700,
       parent: mainWindow,
-      modal: true,
-      closable: true,
+      modal: !isMac,
       minimizable: false,
       maximizable: false,
       title: 'Get a License',
