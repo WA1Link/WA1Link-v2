@@ -4,8 +4,9 @@ import { Button } from '../components/ui/Button';
 import { AGREEMENT_TEXT } from '../components/agreement/agreementText';
 
 export const SettingsPage: React.FC = () => {
-  const { licenseState, fingerprint } = useLicenseStore();
+  const { licenseState, fingerprint, clearLicense } = useLicenseStore();
   const [showAgreement, setShowAgreement] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -57,6 +58,41 @@ export const SettingsPage: React.FC = () => {
               {fingerprint || 'Loading...'}
             </p>
           </div>
+
+          {/* Change License Button */}
+          {!showConfirm ? (
+            <Button
+              variant="secondary"
+              onClick={() => setShowConfirm(true)}
+            >
+              Change License
+            </Button>
+          ) : (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
+              <p className="text-sm text-yellow-800">
+                Your current license will be removed and you will need to enter a new one. All your data (customers, products, payments) will be preserved.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={async () => {
+                    await clearLicense();
+                    setShowConfirm(false);
+                  }}
+                >
+                  Yes, remove
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowConfirm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

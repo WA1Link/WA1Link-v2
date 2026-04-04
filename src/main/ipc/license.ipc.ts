@@ -69,6 +69,11 @@ export function registerLicenseIPC(mainWindow: BrowserWindow): void {
     licenseWindow.loadURL(`https://1link.so/payment_toplu_mesaj?code=${fingerprint}`);
   });
 
+  // Clear license (keeps all other app data intact)
+  ipcMain.handle(channels.CLEAR, async (): Promise<void> => {
+    licenseService.clearLicense();
+  });
+
   // Periodic re-validation every hour
   setInterval(() => {
     const state = licenseService.getState();

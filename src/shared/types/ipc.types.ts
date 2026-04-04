@@ -83,6 +83,7 @@ export interface LicenseAPI {
   getState: () => Promise<LicenseState>;
   getFingerprint: () => Promise<string>;
   openLicensePage: () => Promise<void>;
+  clear: () => Promise<void>;
 }
 
 // Customer CRM IPC

@@ -19,6 +19,9 @@ interface LicenseActions {
   setLicenseState: (state: LicenseState) => void;
   setError: (error: string | null) => void;
 
+  // License management
+  clearLicense: () => Promise<void>;
+
   // Utilities
   isValid: () => boolean;
   canAddAccount: (currentCount: number) => boolean;
@@ -91,6 +94,15 @@ export const useLicenseStore = create<LicenseStore>((set, get) => ({
   // Set error
   setError: (error) => {
     set({ error });
+  },
+
+  // Clear license and reset state (keeps all other app data)
+  clearLicense: async () => {
+    await window.electronAPI.license.clear();
+    set({
+      licenseState: { isValid: false, maxAccounts: 0 },
+      error: null,
+    });
   },
 
   // Check if license is valid

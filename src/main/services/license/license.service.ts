@@ -27,18 +27,22 @@ export function getDeviceFingerprint(): string {
   const cpus = os.cpus();
   const networkInterfaces = os.networkInterfaces();
 
-  // Get first non-internal MAC address
-  let mac = '';
-  for (const interfaces of Object.values(networkInterfaces)) {
+  // Collect all non-internal MAC addresses and sort them for stability.
+  // Using Object.values(networkInterfaces) has undefined key order that can
+  // change after sleep/wake on macOS, so we sort interface names first and
+  // then pick the lowest MAC to guarantee a deterministic result.
+  const macs: string[] = [];
+  const sortedNames = Object.keys(networkInterfaces).sort();
+  for (const name of sortedNames) {
+    const interfaces = networkInterfaces[name];
     if (!interfaces) continue;
     for (const iface of interfaces) {
       if (!iface.internal && iface.mac && iface.mac !== '00:00:00:00:00:00') {
-        mac = iface.mac;
-        break;
+        macs.push(iface.mac);
       }
     }
-    if (mac) break;
   }
+  const mac = macs.sort()[0] || '';
 
   const data = [
     os.hostname(),

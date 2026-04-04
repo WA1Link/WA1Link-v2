@@ -42,6 +42,7 @@ export const IPC_CHANNELS = {
     GET_STATE: 'license:get-state',
     GET_FINGERPRINT: 'license:get-fingerprint',
     OPEN_LICENSE_PAGE: 'license:open-license-page',
+    CLEAR: 'license:clear',
   },
   CUSTOMER: {
     CREATE: 'customer:create',
