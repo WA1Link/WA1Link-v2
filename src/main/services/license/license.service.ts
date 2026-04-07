@@ -1,6 +1,7 @@
 import { createPublicKey, verify } from 'crypto';
 import os from 'os';
 import { createHash } from 'crypto';
+import { execSync } from 'child_process';
 import { LicensePayload, LicenseState, LicenseValidationResult } from '../../../shared/types';
 import { getDatabase } from '../../database/index';
 
@@ -20,41 +21,70 @@ function b64uToBuf(s: string): Buffer {
   return Buffer.from(b64, 'base64');
 }
 
+/** Cached fingerprint — hardware UUID never changes at runtime */
+let cachedFingerprint: string | null = null;
+
 /**
- * Generate device fingerprint from hardware info
+ * Get the platform-specific hardware UUID.
+ * - Windows: motherboard UUID via `wmic csproduct get UUID`
+ * - macOS:   Hardware UUID via `ioreg`
+ * - Linux:   /etc/machine-id (fallback)
+ *
+ * These are stable across reboots, sleep/wake, VPN/Docker changes,
+ * hostname renames, and memory fluctuations.
+ */
+function getHardwareUUID(): string {
+  const platform = os.platform();
+
+  try {
+    if (platform === 'win32') {
+      const output = execSync('wmic csproduct get UUID', {
+        encoding: 'utf8',
+        timeout: 5000,
+        windowsHide: true,
+      });
+      const uuid = output.split('\n').map(l => l.trim()).filter(l => l && l !== 'UUID')[0];
+      if (uuid && uuid !== 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF') {
+        return uuid.toLowerCase();
+      }
+    } else if (platform === 'darwin') {
+      const output = execSync(
+        'ioreg -rd1 -c IOPlatformExpertDevice | grep IOPlatformUUID',
+        { encoding: 'utf8', timeout: 5000 },
+      );
+      const match = output.match(/"IOPlatformUUID"\s*=\s*"([^"]+)"/);
+      if (match?.[1]) {
+        return match[1].toLowerCase();
+      }
+    } else {
+      // Linux fallback
+      const id = execSync('cat /etc/machine-id', {
+        encoding: 'utf8',
+        timeout: 5000,
+      }).trim();
+      if (id) return id;
+    }
+  } catch {
+    // Fall through to OS-based fallback
+  }
+
+  // Last-resort fallback: platform + arch + cpu model (still better than
+  // the old volatile approach, but should rarely be hit)
+  const cpus = os.cpus();
+  return [platform, os.arch(), cpus[0]?.model || 'unknown'].join('|');
+}
+
+/**
+ * Generate a stable device fingerprint from the hardware UUID.
+ * The result is deterministic and survives reboots, sleep/wake cycles,
+ * VPN/Docker network changes, hostname renames, and memory fluctuations.
  */
 export function getDeviceFingerprint(): string {
-  const cpus = os.cpus();
-  const networkInterfaces = os.networkInterfaces();
+  if (cachedFingerprint) return cachedFingerprint;
 
-  // Collect all non-internal MAC addresses and sort them for stability.
-  // Using Object.values(networkInterfaces) has undefined key order that can
-  // change after sleep/wake on macOS, so we sort interface names first and
-  // then pick the lowest MAC to guarantee a deterministic result.
-  const macs: string[] = [];
-  const sortedNames = Object.keys(networkInterfaces).sort();
-  for (const name of sortedNames) {
-    const interfaces = networkInterfaces[name];
-    if (!interfaces) continue;
-    for (const iface of interfaces) {
-      if (!iface.internal && iface.mac && iface.mac !== '00:00:00:00:00:00') {
-        macs.push(iface.mac);
-      }
-    }
-  }
-  const mac = macs.sort()[0] || '';
-
-  const data = [
-    os.hostname(),
-    os.platform(),
-    os.arch(),
-    cpus[0]?.model || '',
-    cpus.length.toString(),
-    os.totalmem().toString(),
-    mac,
-  ].join('|');
-
-  return createHash('sha256').update(data).digest('hex').slice(0, 32);
+  const hwid = getHardwareUUID();
+  cachedFingerprint = createHash('sha256').update(hwid).digest('hex').slice(0, 32);
+  return cachedFingerprint;
 }
 
 // --- DB persistence helpers ---
