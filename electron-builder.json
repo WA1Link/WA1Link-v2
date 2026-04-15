@@ -41,11 +41,11 @@
     "target": [
       {
         "target": "dmg",
-        "arch": ["universal"]
+        "arch": ["x64", "arm64"]
       },
       {
         "target": "zip",
-        "arch": ["universal"]
+        "arch": ["x64", "arm64"]
       }
     ],
     "icon": "build/logoWa1Link.icns",
