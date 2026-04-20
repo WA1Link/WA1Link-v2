@@ -27,6 +27,36 @@ export interface JobTarget {
   name?: string;
   customFields: Record<string, string>;
   status: JobTargetStatus;
+  sentAt?: string;
+  errorMessage?: string;
+  templateId?: string;
+}
+
+export interface MessageHistoryEntry {
+  targetId: string;
+  jobId: string;
+  jobName: string;
+  accountId: string;
+  phoneNumber: string;
+  name?: string;
+  status: JobTargetStatus;
+  sentAt?: string;
+  errorMessage?: string;
+  templateId?: string;
+  templateName?: string;
+}
+
+export interface MessageHistoryFilter {
+  limit?: number;
+  offset?: number;
+  status?: JobTargetStatus | 'all';
+  jobId?: string;
+  search?: string;
+}
+
+export interface MessageHistoryResult {
+  entries: MessageHistoryEntry[];
+  total: number;
 }
 
 export interface CreateJobInput {

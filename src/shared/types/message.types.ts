@@ -17,6 +17,7 @@ export interface MessageTemplate {
 }
 
 export interface Target {
+  id?: string;
   phoneNumber: string;
   name?: string;
   customFields: Record<string, string>;

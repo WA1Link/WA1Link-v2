@@ -1,7 +1,13 @@
 import { ipcMain, BrowserWindow } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { schedulerService } from '../services/scheduler/scheduler.service';
-import { CreateJobInput, ScheduledJob } from '../../shared/types';
+import { scheduleRepository } from '../database/repositories/schedule.repository';
+import {
+  CreateJobInput,
+  ScheduledJob,
+  MessageHistoryFilter,
+  MessageHistoryResult,
+} from '../../shared/types';
 
 export function registerSchedulerIPC(mainWindow: BrowserWindow): void {
   const channels = IPC_CHANNELS.SCHEDULER;
@@ -28,6 +34,14 @@ export function registerSchedulerIPC(mainWindow: BrowserWindow): void {
   ipcMain.handle(channels.DELETE_JOB, async (_, jobId: string): Promise<void> => {
     schedulerService.deleteJob(jobId);
   });
+
+  // Message history
+  ipcMain.handle(
+    channels.GET_MESSAGE_HISTORY,
+    async (_, filter: MessageHistoryFilter = {}): Promise<MessageHistoryResult> => {
+      return scheduleRepository.getMessageHistory(filter);
+    }
+  );
 
   // Set up event forwarding
   schedulerService.on('job-progress', (progress) => {

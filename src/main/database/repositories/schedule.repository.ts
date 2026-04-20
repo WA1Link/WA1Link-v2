@@ -7,6 +7,9 @@ import {
   JobStatus,
   JobTargetStatus,
   DelayConfig,
+  MessageHistoryEntry,
+  MessageHistoryFilter,
+  MessageHistoryResult,
 } from '../../../shared/types';
 
 interface JobRow {
@@ -33,6 +36,15 @@ interface TargetRow {
   name: string | null;
   custom_fields: string | null;
   status: JobTargetStatus;
+  sent_at: string | null;
+  error_message: string | null;
+  template_id: string | null;
+}
+
+interface HistoryRow extends TargetRow {
+  job_name: string;
+  account_id: string;
+  template_name: string | null;
 }
 
 function rowToJob(row: JobRow): ScheduledJob {
@@ -62,6 +74,25 @@ function rowToTarget(row: TargetRow): JobTarget {
     name: row.name ?? undefined,
     customFields: row.custom_fields ? JSON.parse(row.custom_fields) : {},
     status: row.status,
+    sentAt: row.sent_at ?? undefined,
+    errorMessage: row.error_message ?? undefined,
+    templateId: row.template_id ?? undefined,
+  };
+}
+
+function rowToHistoryEntry(row: HistoryRow): MessageHistoryEntry {
+  return {
+    targetId: row.id,
+    jobId: row.job_id,
+    jobName: row.job_name,
+    accountId: row.account_id,
+    phoneNumber: row.phone_number,
+    name: row.name ?? undefined,
+    status: row.status,
+    sentAt: row.sent_at ?? undefined,
+    errorMessage: row.error_message ?? undefined,
+    templateId: row.template_id ?? undefined,
+    templateName: row.template_name ?? undefined,
   };
 }
 
@@ -201,6 +232,81 @@ export class ScheduleRepository {
   updateTargetStatus(targetId: string, status: JobTargetStatus): void {
     const db = getDatabase();
     db.prepare('UPDATE job_targets SET status = ? WHERE id = ?').run(status, targetId);
+  }
+
+  recordTargetResult(
+    targetId: string,
+    status: JobTargetStatus,
+    options: { sentAt: string; templateId?: string; errorMessage?: string }
+  ): void {
+    const db = getDatabase();
+    db.prepare(`
+      UPDATE job_targets
+      SET status = ?, sent_at = ?, template_id = ?, error_message = ?
+      WHERE id = ?
+    `).run(
+      status,
+      options.sentAt,
+      options.templateId ?? null,
+      options.errorMessage ?? null,
+      targetId
+    );
+  }
+
+  getMessageHistory(filter: MessageHistoryFilter = {}): MessageHistoryResult {
+    const db = getDatabase();
+    const limit = Math.min(Math.max(filter.limit ?? 50, 1), 500);
+    const offset = Math.max(filter.offset ?? 0, 0);
+
+    const where: string[] = ['jt.status != ?'];
+    const params: unknown[] = ['pending'];
+
+    if (filter.status && filter.status !== 'all') {
+      where.push('jt.status = ?');
+      params.push(filter.status);
+    }
+
+    if (filter.jobId) {
+      where.push('jt.job_id = ?');
+      params.push(filter.jobId);
+    }
+
+    if (filter.search) {
+      where.push('(jt.phone_number LIKE ? OR jt.name LIKE ?)');
+      const like = `%${filter.search}%`;
+      params.push(like, like);
+    }
+
+    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+
+    const countRow = db
+      .prepare(
+        `SELECT COUNT(*) as c FROM job_targets jt ${whereSql}`
+      )
+      .get(...params) as { c: number };
+
+    const rows = db
+      .prepare(
+        `
+        SELECT
+          jt.*,
+          sj.name        AS job_name,
+          sj.account_id  AS account_id,
+          mt.name        AS template_name
+        FROM job_targets jt
+        JOIN scheduled_jobs sj ON sj.id = jt.job_id
+        LEFT JOIN message_templates mt ON mt.id = jt.template_id
+        ${whereSql}
+        ORDER BY jt.sent_at DESC, jt.id DESC
+        LIMIT ? OFFSET ?
+      `
+      )
+      .all(...params, limit, offset) as HistoryRow[];
+
+    return {
+      total: countRow.c,
+      entries: rows.map(rowToHistoryEntry),
+    };
   }
 
   deleteJob(id: string): boolean {

@@ -20,6 +20,8 @@ interface MessageContent {
 }
 
 interface PreparedTarget {
+  id?: string;
+  templateId?: string;
   jid: string;
   name: string;
   phoneNumber: string;
@@ -92,32 +94,40 @@ export class MessageService extends EventEmitter {
     targets: Target[]
   ): PreparedTarget[] {
     const prepared: PreparedTarget[] = [];
+    const totalTargets = targets.length;
+    const templateCount = templates.length;
 
-    for (const target of targets) {
+    for (let i = 0; i < totalTargets; i++) {
+      const target = targets[i];
       const jid = phoneNormalizer.toJID(target.phoneNumber);
       if (!jid) continue;
 
-      const messages: MessageContent[] = [];
+      // Split targets into N contiguous buckets (N = number of templates).
+      // Target i gets template at floor(i * N / totalTargets).
+      const templateIndex =
+        templateCount > 0
+          ? Math.min(Math.floor((i * templateCount) / totalTargets), templateCount - 1)
+          : 0;
+      const template = templates[templateIndex];
 
-      for (const template of templates) {
-        for (const content of template.contents) {
-          if (content.contentType === 'text') {
-            // Render text with variables
-            const customFields = {
-              ...target.customFields,
-              Name: target.name ?? '',
-              Number: target.phoneNumber,
-            };
-            const rendered = renderTemplate(content.contentValue, customFields);
-            messages.push({ type: 'text', value: rendered });
-          } else if (content.contentType === 'image') {
-            // Image path
-            messages.push({ type: 'image', value: content.contentValue });
-          }
+      const messages: MessageContent[] = [];
+      for (const content of template.contents) {
+        if (content.contentType === 'text') {
+          const customFields = {
+            ...target.customFields,
+            Name: target.name ?? '',
+            Number: target.phoneNumber,
+          };
+          const rendered = renderTemplate(content.contentValue, customFields);
+          messages.push({ type: 'text', value: rendered });
+        } else if (content.contentType === 'image') {
+          messages.push({ type: 'image', value: content.contentValue });
         }
       }
 
       prepared.push({
+        id: target.id,
+        templateId: template.id,
         jid,
         name: target.name ?? target.phoneNumber,
         phoneNumber: target.phoneNumber,
@@ -223,6 +233,16 @@ export class MessageService extends EventEmitter {
 
         progress.sent++;
 
+        if (target.id) {
+          this.emit('target-result', {
+            targetId: target.id,
+            templateId: target.templateId,
+            phoneNumber: target.phoneNumber,
+            status: 'sent' as const,
+            sentAt: new Date().toISOString(),
+          });
+        }
+
         // CRM auto-save: ensure contact exists (non-blocking, fire-and-forget)
         try {
           const result = customerRepository.ensureContact(
@@ -239,11 +259,23 @@ export class MessageService extends EventEmitter {
           crmStats.skippedContacts++;
         }
       } catch (error) {
+        const errorMessage = (error as Error).message;
         progress.failed++;
         progress.errors.push({
           phoneNumber: target.phoneNumber,
-          error: (error as Error).message,
+          error: errorMessage,
         });
+
+        if (target.id) {
+          this.emit('target-result', {
+            targetId: target.id,
+            templateId: target.templateId,
+            phoneNumber: target.phoneNumber,
+            status: 'failed' as const,
+            sentAt: new Date().toISOString(),
+            errorMessage,
+          });
+        }
       }
 
       messageCount++;

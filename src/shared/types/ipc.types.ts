@@ -14,7 +14,13 @@ import {
   PersonalChat,
   WhatsAppGroup,
 } from './contact.types';
-import { CreateJobInput, JobProgress, ScheduledJob } from './schedule.types';
+import {
+  CreateJobInput,
+  JobProgress,
+  ScheduledJob,
+  MessageHistoryFilter,
+  MessageHistoryResult,
+} from './schedule.types';
 import { LicensePayload, LicenseState } from './license.types';
 import {
   Customer,
@@ -73,6 +79,7 @@ export interface SchedulerAPI {
   getAllJobs: () => Promise<ScheduledJob[]>;
   cancelJob: (jobId: string) => Promise<void>;
   deleteJob: (jobId: string) => Promise<void>;
+  getMessageHistory: (filter?: MessageHistoryFilter) => Promise<MessageHistoryResult>;
   onJobProgress: (callback: (progress: JobProgress) => void) => () => void;
 }
 

@@ -69,6 +69,8 @@ const electronAPI: ElectronAPI = {
     getAllJobs: () => ipcRenderer.invoke(IPC_CHANNELS.SCHEDULER.GET_ALL_JOBS),
     cancelJob: (jobId) => ipcRenderer.invoke(IPC_CHANNELS.SCHEDULER.CANCEL_JOB, jobId),
     deleteJob: (jobId) => ipcRenderer.invoke(IPC_CHANNELS.SCHEDULER.DELETE_JOB, jobId),
+    getMessageHistory: (filter) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SCHEDULER.GET_MESSAGE_HISTORY, filter),
     onJobProgress: (callback) => {
       const handler = (_: Electron.IpcRendererEvent, data: any) => callback(data);
       ipcRenderer.on(IPC_CHANNELS.SCHEDULER.JOB_PROGRESS, handler);

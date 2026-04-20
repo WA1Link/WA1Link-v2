@@ -35,6 +35,7 @@ export const IPC_CHANNELS = {
     CANCEL_JOB: 'scheduler:cancel-job',
     DELETE_JOB: 'scheduler:delete-job',
     JOB_PROGRESS: 'scheduler:job-progress',
+    GET_MESSAGE_HISTORY: 'scheduler:get-message-history',
   },
   LICENSE: {
     VALIDATE: 'license:validate',

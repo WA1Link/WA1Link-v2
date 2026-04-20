@@ -144,6 +144,7 @@ export class SchedulerService extends EventEmitter {
       // Get targets
       const jobTargets = scheduleRepository.getJobTargets(job.id);
       const targets: Target[] = jobTargets.map((t) => ({
+        id: t.id,
         phoneNumber: t.phoneNumber,
         name: t.name,
         customFields: t.customFields,
@@ -153,6 +154,20 @@ export class SchedulerService extends EventEmitter {
       const onProgress = (progress: { sent: number; failed: number }) => {
         scheduleRepository.updateJobCounts(job.id, progress.sent, progress.failed);
         this.emitProgress(job.id, 'running', job.totalCount, progress.sent, progress.failed);
+      };
+
+      const onTargetResult = (result: {
+        targetId: string;
+        templateId?: string;
+        status: 'sent' | 'failed';
+        sentAt: string;
+        errorMessage?: string;
+      }) => {
+        scheduleRepository.recordTargetResult(result.targetId, result.status, {
+          sentAt: result.sentAt,
+          templateId: result.templateId,
+          errorMessage: result.errorMessage,
+        });
       };
 
       const onComplete = (result: { sent: number; failed: number }) => {
@@ -165,10 +180,12 @@ export class SchedulerService extends EventEmitter {
 
         // Clean up listeners
         messageService.off('progress', onProgress);
+        messageService.off('target-result', onTargetResult);
         messageService.off('complete', onComplete);
       };
 
       messageService.on('progress', onProgress);
+      messageService.on('target-result', onTargetResult);
       messageService.on('complete', onComplete);
 
       // Create bulk send request

@@ -7,6 +7,7 @@ import { runSchedulerMigration } from './migrations/003_scheduler';
 import { runCRMMigration } from './migrations/004_crm';
 import { runWhatsAppChatsMigration } from './migrations/005_whatsapp_chats';
 import { runChatMetadataMigration } from './migrations/006_chat_metadata';
+import { runTargetHistoryMigration } from './migrations/007_target_history';
 
 let db: Database.Database | null = null;
 
@@ -37,6 +38,7 @@ export function initDatabase(): Database.Database {
   runCRMMigration(db);
   runWhatsAppChatsMigration(db);
   runChatMetadataMigration(db);
+  runTargetHistoryMigration(db);
 
   console.log('Database initialized at:', dbPath);
 

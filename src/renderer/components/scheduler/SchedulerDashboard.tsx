@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useScheduleStore } from '../../stores/useScheduleStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { ScheduledJobList } from './ScheduledJobList';
+import { MessageHistoryList } from './MessageHistoryList';
 import { Button } from '../ui/Button';
 
 export const SchedulerDashboard: React.FC = () => {
@@ -76,6 +77,12 @@ export const SchedulerDashboard: React.FC = () => {
           <ScheduledJobList jobs={completedJobs} onCancel={handleCancel} onDelete={handleDelete} />
         </div>
       )}
+
+      {/* Sent Messages History (per-recipient) */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Sent Messages History</h2>
+        <MessageHistoryList jobs={jobs} />
+      </div>
 
       {/* Empty state */}
       {jobs.length === 0 && !isLoading && (
