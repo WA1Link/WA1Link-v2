@@ -25,6 +25,7 @@
     "@whiskeysockets/baileys": "^6.7.9",
     "better-sqlite3": "^11.5.0",
     "electron-updater": "^6.6.2",
+    "libphonenumber-js": "^1.12.41",
     "moment": "^2.30.1",
     "pino": "^9.9.0",
     "qrcode.react": "^4.2.0",
