@@ -195,16 +195,18 @@ export const MessagingPage: React.FC = () => {
             </Button>
           </div>
 
-          <MessageTemplateList
-            templates={templates}
-            onToggleSelect={toggleTemplateSelection}
-            onEdit={(template) => {
-              setEditingTemplate(template);
-              setShowComposer(true);
-            }}
-            onDelete={handleDeleteTemplate}
-            onCheck={(template) => setPreviewTemplate(template)}
-          />
+          <div className="max-h-[500px] overflow-y-auto pr-2 -mr-2">
+            <MessageTemplateList
+              templates={templates}
+              onToggleSelect={toggleTemplateSelection}
+              onEdit={(template) => {
+                setEditingTemplate(template);
+                setShowComposer(true);
+              }}
+              onDelete={handleDeleteTemplate}
+              onCheck={(template) => setPreviewTemplate(template)}
+            />
+          </div>
         </div>
 
         {/* Targets */}

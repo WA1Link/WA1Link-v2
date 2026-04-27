@@ -122,7 +122,11 @@ export function toJID(phone: string, defaultCountryCode?: string): string | null
 }
 
 export function fromJID(jid: string): string {
-  return jid.replace('@s.whatsapp.net', '').replace('@c.us', '');
+  if (typeof jid !== 'string' || !jid.includes('@')) return '';
+  // Strip device suffix (":NN") that some Baileys versions append to the user
+  // portion of the JID, e.g. "1234567890:42@s.whatsapp.net".
+  const userPart = jid.split('@')[0].split(':')[0];
+  return userPart || '';
 }
 
 export function formatPhoneDisplay(phone: string): string {

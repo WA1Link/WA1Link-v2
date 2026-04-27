@@ -26,6 +26,16 @@ const electronAPI: ElectronAPI = {
       ipcRenderer.on(IPC_CHANNELS.ACCOUNT.PAIRING_CODE_RECEIVED, handler);
       return () => ipcRenderer.removeListener(IPC_CHANNELS.ACCOUNT.PAIRING_CODE_RECEIVED, handler);
     },
+    onError: (callback) => {
+      const handler = (_: Electron.IpcRendererEvent, data: any) => callback(data);
+      ipcRenderer.on(IPC_CHANNELS.ACCOUNT.ERROR, handler);
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.ACCOUNT.ERROR, handler);
+    },
+    onReconnecting: (callback) => {
+      const handler = (_: Electron.IpcRendererEvent, data: any) => callback(data);
+      ipcRenderer.on(IPC_CHANNELS.ACCOUNT.RECONNECTING, handler);
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.ACCOUNT.RECONNECTING, handler);
+    },
   },
 
   message: {
@@ -45,6 +55,16 @@ const electronAPI: ElectronAPI = {
       const handler = (_: Electron.IpcRendererEvent, data: any) => callback(data);
       ipcRenderer.on(IPC_CHANNELS.MESSAGE.SENDING_COMPLETE, handler);
       return () => ipcRenderer.removeListener(IPC_CHANNELS.MESSAGE.SENDING_COMPLETE, handler);
+    },
+    onError: (callback) => {
+      const handler = (_: Electron.IpcRendererEvent, data: any) => callback(data);
+      ipcRenderer.on(IPC_CHANNELS.MESSAGE.SENDING_ERROR, handler);
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.MESSAGE.SENDING_ERROR, handler);
+    },
+    onTargetResult: (callback) => {
+      const handler = (_: Electron.IpcRendererEvent, data: any) => callback(data);
+      ipcRenderer.on(IPC_CHANNELS.MESSAGE.TARGET_RESULT, handler);
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.MESSAGE.TARGET_RESULT, handler);
     },
   },
 

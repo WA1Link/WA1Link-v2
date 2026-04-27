@@ -8,6 +8,8 @@ export const IPC_CHANNELS = {
     STATUS_CHANGED: 'account:status-changed',
     QR_RECEIVED: 'account:qr-received',
     PAIRING_CODE_RECEIVED: 'account:pairing-code-received',
+    ERROR: 'account:error',
+    RECONNECTING: 'account:reconnecting',
   },
   MESSAGE: {
     CREATE_TEMPLATE: 'message:create-template',
@@ -18,6 +20,8 @@ export const IPC_CHANNELS = {
     STOP_SENDING: 'message:stop-sending',
     SENDING_PROGRESS: 'message:sending-progress',
     SENDING_COMPLETE: 'message:sending-complete',
+    SENDING_ERROR: 'message:sending-error',
+    TARGET_RESULT: 'message:target-result',
     SELECT_IMAGE: 'message:select-image',
   },
   CONTACT: {

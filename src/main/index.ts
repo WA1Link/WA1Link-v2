@@ -103,16 +103,41 @@ app.on('window-all-closed', () => {
   }
 });
 
-// Cleanup before quit
-app.on('before-quit', async () => {
-  // Stop scheduler
-  schedulerService.stop();
+// Cleanup before quit. Electron does not await async before-quit handlers
+// by default, so we preventDefault, run cleanup, then exit explicitly.
+// Both the first event AND any re-entrant events while cleanup is running
+// must call preventDefault() — otherwise a second quit (e.g. user double-
+// pressing Cmd+Q) would let Electron tear the process down while the first
+// cleanup is still flushing the DB / disconnecting the socket.
+let cleaningUp = false;
+app.on('before-quit', (event) => {
+  if (cleaningUp) {
+    event.preventDefault();
+    return;
+  }
+  cleaningUp = true;
+  event.preventDefault();
 
-  // Disconnect socket
-  await socketService.disconnect();
+  // Force exit after 5 seconds even if cleanup hangs (e.g. baileys' socket.end
+  // never resolves on a broken websocket). Without this fallback the app
+  // would be impossible to quit.
+  const forceExit = setTimeout(() => {
+    console.warn('Cleanup timed out after 5s; forcing exit.');
+    app.exit(0);
+  }, 5000);
 
-  // Close database
-  closeDatabase();
+  (async () => {
+    try {
+      schedulerService.stop();
+      await socketService.disconnect();
+      closeDatabase();
+    } catch (err) {
+      console.error('Error during cleanup:', err);
+    } finally {
+      clearTimeout(forceExit);
+      app.exit(0);
+    }
+  })();
 });
 
 // Handle uncaught exceptions

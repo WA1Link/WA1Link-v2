@@ -78,11 +78,17 @@ export class MessageService extends EventEmitter {
    */
   private cancellableDelay(ms: number, signal: EventEmitter): Promise<void> {
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(resolve, ms);
-      signal.once('abort', () => {
+      const onAbort = () => {
         clearTimeout(timeout);
         reject(new Error('Aborted'));
-      });
+      };
+      const timeout = setTimeout(() => {
+        // Detach listener so abort signals fired after a delay completes
+        // don't leak `'abort'` listeners on the shared abortController.
+        signal.off('abort', onAbort);
+        resolve();
+      }, ms);
+      signal.once('abort', onAbort);
     });
   }
 
@@ -92,15 +98,19 @@ export class MessageService extends EventEmitter {
   private prepareTargets(
     templates: MessageTemplate[],
     targets: Target[]
-  ): PreparedTarget[] {
+  ): { prepared: PreparedTarget[]; skipped: Target[] } {
     const prepared: PreparedTarget[] = [];
+    const skipped: Target[] = [];
     const totalTargets = targets.length;
     const templateCount = templates.length;
 
     for (let i = 0; i < totalTargets; i++) {
       const target = targets[i];
       const jid = phoneNormalizer.toJID(target.phoneNumber);
-      if (!jid) continue;
+      if (!jid) {
+        skipped.push(target);
+        continue;
+      }
 
       // Split targets into N contiguous buckets (N = number of templates).
       // Target i gets template at floor(i * N / totalTargets).
@@ -135,7 +145,7 @@ export class MessageService extends EventEmitter {
       });
     }
 
-    return prepared;
+    return { prepared, skipped };
   }
 
   /**
@@ -149,6 +159,9 @@ export class MessageService extends EventEmitter {
     }
 
     this.abortController = new EventEmitter();
+    // Many cancellableDelay calls attach 'abort' listeners briefly; raise the
+    // cap so the default 10-listener warning doesn't fire on transient bursts.
+    this.abortController.setMaxListeners(0);
     this.isSending = true;
 
     // Get templates
@@ -158,6 +171,8 @@ export class MessageService extends EventEmitter {
 
     if (templates.length === 0) {
       this.emit('error', { message: 'No templates selected' });
+      this.isSending = false;
+      this.emit('complete', { sent: 0, failed: 0, crmStats: { newContacts: 0, skippedContacts: 0 } });
       return;
     }
 
@@ -165,11 +180,51 @@ export class MessageService extends EventEmitter {
     this.delayConfig = request.delayConfig;
 
     // Prepare targets
-    const preparedTargets = this.prepareTargets(templates, request.targets);
+    const { prepared, skipped } = this.prepareTargets(templates, request.targets);
+
+    // Surface invalid-number drops as failed target-results so callers know
+    // why the totals don't match the input list.
+    for (const target of skipped) {
+      if (target.id) {
+        this.emit('target-result', {
+          targetId: target.id,
+          phoneNumber: target.phoneNumber,
+          status: 'failed' as const,
+          sentAt: new Date().toISOString(),
+          errorMessage: 'Invalid phone number — could not normalize to a JID',
+        });
+      }
+    }
+    if (skipped.length > 0) {
+      this.emit('error', {
+        message: `${skipped.length} target(s) skipped due to invalid phone numbers`,
+      });
+    }
+
+    if (prepared.length === 0) {
+      this.isSending = false;
+      this.emit('complete', {
+        sent: 0,
+        failed: skipped.length,
+        crmStats: { newContacts: 0, skippedContacts: 0 },
+      });
+      return;
+    }
 
     // Execute sending
     this.sendingQueue = this.sendingQueue.then(async () => {
-      await this.executeSending(preparedTargets);
+      try {
+        await this.executeSending(prepared, skipped.length);
+      } catch (err) {
+        this.emit('error', { message: (err as Error).message });
+        this.emit('complete', {
+          sent: 0,
+          failed: prepared.length + skipped.length,
+          crmStats: { newContacts: 0, skippedContacts: 0 },
+        });
+      } finally {
+        this.isSending = false;
+      }
     });
 
     return this.sendingQueue;
@@ -178,24 +233,50 @@ export class MessageService extends EventEmitter {
   /**
    * Execute the actual sending
    */
-  private async executeSending(targets: PreparedTarget[]): Promise<void> {
-    const socket = socketService.getSocket();
-    if (!socket) {
-      this.emit('error', { message: 'Socket is not connected' });
-      return;
-    }
-
+  private async executeSending(
+    targets: PreparedTarget[],
+    preSkippedCount: number = 0
+  ): Promise<void> {
     const crmStats: CRMSyncStats = {
       newContacts: 0,
       skippedContacts: 0,
     };
 
     const progress: SendingProgress = {
-      total: targets.length,
+      total: targets.length + preSkippedCount,
       sent: 0,
-      failed: 0,
+      failed: preSkippedCount,
       errors: [],
       crmStats,
+    };
+
+    const socket = socketService.getSocket();
+    if (!socket || !socketService.isConnected()) {
+      this.emit('error', { message: 'Socket is not connected' });
+      this.emit('complete', {
+        sent: 0,
+        failed: targets.length + preSkippedCount,
+        crmStats: { ...crmStats },
+      });
+      return;
+    }
+
+    // Cache image buffers so we don't re-read the same file once per target.
+    // Maps absolute path -> { buffer | error }.
+    const imageCache = new Map<string, { buffer?: Buffer; error?: string }>();
+    const loadImage = (filePath: string): { buffer?: Buffer; error?: string } => {
+      const cached = imageCache.get(filePath);
+      if (cached) return cached;
+      try {
+        const buffer = fs.readFileSync(filePath);
+        const entry = { buffer };
+        imageCache.set(filePath, entry);
+        return entry;
+      } catch (err) {
+        const entry = { error: (err as Error).message };
+        imageCache.set(filePath, entry);
+        return entry;
+      }
     };
 
     let messageCount = 0;
@@ -221,13 +302,38 @@ export class MessageService extends EventEmitter {
       }
 
       try {
-        // Send all messages for this target
+        // Send all messages for this target. Wrap each Baileys call in a
+        // hard timeout — if the socket is silently stuck (e.g. WhatsApp
+        // server-side init query hang), the awaited promise can otherwise
+        // never resolve and the entire batch freezes.
+        const sendWithTimeout = async (payload: Record<string, unknown>) => {
+          const SEND_TIMEOUT_MS = 30_000;
+          let timer: NodeJS.Timeout | undefined;
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            timer = setTimeout(
+              () => reject(new Error(`sendMessage timed out after ${SEND_TIMEOUT_MS / 1000}s`)),
+              SEND_TIMEOUT_MS
+            );
+          });
+          try {
+            await Promise.race([
+              socket.sendMessage(target.jid, payload),
+              timeoutPromise,
+            ]);
+          } finally {
+            if (timer) clearTimeout(timer);
+          }
+        };
+
         for (const message of target.messages) {
           if (message.type === 'text') {
-            await socket.sendMessage(target.jid, { text: message.value });
+            await sendWithTimeout({ text: message.value });
           } else if (message.type === 'image') {
-            const fileBuffer = fs.readFileSync(message.value);
-            await socket.sendMessage(target.jid, { image: fileBuffer });
+            const img = loadImage(message.value);
+            if (img.error || !img.buffer) {
+              throw new Error(`Image not readable (${message.value}): ${img.error ?? 'unknown error'}`);
+            }
+            await sendWithTimeout({ image: img.buffer });
           }
         }
 

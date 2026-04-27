@@ -28,6 +28,12 @@ export class SchedulerService extends EventEmitter {
   start(): void {
     if (this.checkInterval) return;
 
+    // Recover orphaned 'running' jobs left over from a prior process that
+    // exited mid-send (crash, force-quit, OS shutdown). Without this, those
+    // rows would sit in 'running' forever and never be picked up by the
+    // scheduler again.
+    this.recoverInterruptedJobs();
+
     // Initial check
     this.checkDueJobs();
 
@@ -35,6 +41,26 @@ export class SchedulerService extends EventEmitter {
     this.checkInterval = setInterval(() => {
       this.checkDueJobs();
     }, CHECK_INTERVAL_MS);
+  }
+
+  /**
+   * Mark any 'running' jobs from a previous process as 'failed'. This must
+   * only run at startup, before checkDueJobs and before runningJobId is set.
+   */
+  private recoverInterruptedJobs(): void {
+    try {
+      const allJobs = scheduleRepository.getAllJobs();
+      for (const job of allJobs) {
+        if (job.status === 'running') {
+          scheduleRepository.updateJobStatus(job.id, 'failed', {
+            completedAt: new Date().toISOString(),
+            errorMessage: 'Interrupted by application shutdown',
+          });
+        }
+      }
+    } catch (err) {
+      console.error('[SchedulerService] Failed to recover interrupted jobs:', err);
+    }
   }
 
   /**
@@ -122,6 +148,19 @@ export class SchedulerService extends EventEmitter {
 
     this.emitProgress(job.id, 'running', job.totalCount, 0, 0);
 
+    let onProgress: ((p: { sent: number; failed: number }) => void) | null = null;
+    let onTargetResult: ((r: any) => void) | null = null;
+    let onComplete: ((r: { sent: number; failed: number }) => void) | null = null;
+    let onError: ((e: { message: string }) => void) | null = null;
+    let completed = false;
+
+    const detachListeners = () => {
+      if (onProgress) messageService.off('progress', onProgress);
+      if (onTargetResult) messageService.off('target-result', onTargetResult);
+      if (onComplete) messageService.off('complete', onComplete);
+      if (onError) messageService.off('error', onError);
+    };
+
     try {
       // Get account
       const account = accountRepository.getById(job.accountId);
@@ -150,13 +189,13 @@ export class SchedulerService extends EventEmitter {
         customFields: t.customFields,
       }));
 
-      // Set up progress listener
-      const onProgress = (progress: { sent: number; failed: number }) => {
+      // Set up listeners
+      onProgress = (progress: { sent: number; failed: number }) => {
         scheduleRepository.updateJobCounts(job.id, progress.sent, progress.failed);
         this.emitProgress(job.id, 'running', job.totalCount, progress.sent, progress.failed);
       };
 
-      const onTargetResult = (result: {
+      onTargetResult = (result: {
         targetId: string;
         templateId?: string;
         status: 'sent' | 'failed';
@@ -170,23 +209,61 @@ export class SchedulerService extends EventEmitter {
         });
       };
 
-      const onComplete = (result: { sent: number; failed: number }) => {
+      // Don't overwrite a terminal status (cancelled/failed) that another
+      // caller (e.g. cancelJob) has already written to the DB.
+      const isTerminallySet = (): boolean => {
+        const fresh = scheduleRepository.getJobById(job.id);
+        return fresh?.status === 'cancelled' || fresh?.status === 'failed';
+      };
+
+      onComplete = (result: { sent: number; failed: number }) => {
+        completed = true;
+        // Always persist the final counts so the user sees what actually went out.
+        scheduleRepository.updateJobCounts(job.id, result.sent, result.failed);
+        if (isTerminallySet()) {
+          // Job was cancelled or failed externally; emit progress with the
+          // final counts but leave the existing terminal status alone.
+          const fresh = scheduleRepository.getJobById(job.id);
+          this.emitProgress(
+            job.id,
+            (fresh?.status as JobProgress['status']) ?? 'completed',
+            job.totalCount,
+            result.sent,
+            result.failed
+          );
+          return;
+        }
         scheduleRepository.updateJobStatus(job.id, 'completed', {
           completedAt: new Date().toISOString(),
         });
-        scheduleRepository.updateJobCounts(job.id, result.sent, result.failed);
         this.emitProgress(job.id, 'completed', job.totalCount, result.sent, result.failed);
-        this.runningJobId = null;
+      };
 
-        // Clean up listeners
-        messageService.off('progress', onProgress);
-        messageService.off('target-result', onTargetResult);
-        messageService.off('complete', onComplete);
+      onError = (e: { message: string }) => {
+        // Capture errors emitted before sendBulk's promise resolves so the job
+        // doesn't sit indefinitely in "running" state.
+        if (!completed) {
+          completed = true;
+          if (isTerminallySet()) return;
+          scheduleRepository.updateJobStatus(job.id, 'failed', {
+            completedAt: new Date().toISOString(),
+            errorMessage: e.message,
+          });
+          this.emitProgress(
+            job.id,
+            'failed',
+            job.totalCount,
+            job.sentCount,
+            job.failedCount,
+            e.message
+          );
+        }
       };
 
       messageService.on('progress', onProgress);
       messageService.on('target-result', onTargetResult);
       messageService.on('complete', onComplete);
+      messageService.on('error', onError);
 
       // Create bulk send request
       const request: BulkSendRequest = {
@@ -198,22 +275,46 @@ export class SchedulerService extends EventEmitter {
 
       // Start sending
       await messageService.sendBulk(request);
+
+      // If sendBulk resolved without ever firing complete/error (e.g. it
+      // short-circuited internally), surface that as a failure rather than
+      // leaving the job stuck.
+      if (!completed) {
+        const fresh = scheduleRepository.getJobById(job.id);
+        if (fresh?.status !== 'cancelled' && fresh?.status !== 'failed') {
+          scheduleRepository.updateJobStatus(job.id, 'failed', {
+            completedAt: new Date().toISOString(),
+            errorMessage: 'Send finished without completion event',
+          });
+          this.emitProgress(
+            job.id,
+            'failed',
+            job.totalCount,
+            job.sentCount,
+            job.failedCount,
+            'Send finished without completion event'
+          );
+        }
+      }
     } catch (error) {
-      // Update job as failed
-      scheduleRepository.updateJobStatus(job.id, 'failed', {
-        completedAt: new Date().toISOString(),
-        errorMessage: (error as Error).message,
-      });
+      const fresh = scheduleRepository.getJobById(job.id);
+      if (fresh?.status !== 'cancelled' && fresh?.status !== 'failed') {
+        scheduleRepository.updateJobStatus(job.id, 'failed', {
+          completedAt: new Date().toISOString(),
+          errorMessage: (error as Error).message,
+        });
 
-      this.emitProgress(
-        job.id,
-        'failed',
-        job.totalCount,
-        job.sentCount,
-        job.failedCount,
-        (error as Error).message
-      );
-
+        this.emitProgress(
+          job.id,
+          'failed',
+          job.totalCount,
+          job.sentCount,
+          job.failedCount,
+          (error as Error).message
+        );
+      }
+    } finally {
+      detachListeners();
       this.runningJobId = null;
     }
   }
@@ -223,10 +324,6 @@ export class SchedulerService extends EventEmitter {
    */
   private waitForConnection(timeoutMs: number): Promise<void> {
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error('Connection timeout'));
-      }, timeoutMs);
-
       const checkInterval = setInterval(() => {
         if (socketService.isConnected()) {
           clearTimeout(timeout);
@@ -234,6 +331,11 @@ export class SchedulerService extends EventEmitter {
           resolve();
         }
       }, 500);
+
+      const timeout = setTimeout(() => {
+        clearInterval(checkInterval);
+        reject(new Error('Connection timeout'));
+      }, timeoutMs);
     });
   }
 
@@ -264,6 +366,39 @@ export class SchedulerService extends EventEmitter {
    */
   getRunningJobId(): string | null {
     return this.runningJobId;
+  }
+
+  /**
+   * Run a direct (non-scheduled) bulk send. Creates a synthetic job row in
+   * scheduled_jobs / job_targets so the existing per-target persistence and
+   * history page coverage applies to direct sends too.
+   */
+  async runDirectSend(request: BulkSendRequest): Promise<ScheduledJob> {
+    if (this.runningJobId) {
+      throw new Error('Another bulk send is already running. Wait for it to finish first.');
+    }
+
+    const job = scheduleRepository.createJob({
+      name: `Direct send – ${new Date().toLocaleString()}`,
+      accountId: request.accountId,
+      templateIds: request.templateIds,
+      scheduledAt: new Date().toISOString(),
+      delayConfig: request.delayConfig,
+      targets: request.targets,
+    });
+
+    await this.runJob(job);
+    return scheduleRepository.getJobById(job.id) ?? job;
+  }
+
+  /**
+   * Cancel whatever job is currently running (scheduled or direct). No-op
+   * if nothing is running. Wired up to the renderer's "Stop sending" button.
+   */
+  cancelCurrentJob(): void {
+    if (this.runningJobId) {
+      this.cancelJob(this.runningJobId);
+    }
   }
 }
 

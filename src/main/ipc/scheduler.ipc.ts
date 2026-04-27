@@ -9,6 +9,8 @@ import {
   MessageHistoryResult,
 } from '../../shared/types';
 
+let listenersRegistered = false;
+
 export function registerSchedulerIPC(mainWindow: BrowserWindow): void {
   const channels = IPC_CHANNELS.SCHEDULER;
 
@@ -43,7 +45,10 @@ export function registerSchedulerIPC(mainWindow: BrowserWindow): void {
     }
   );
 
-  // Set up event forwarding
+  // Set up event forwarding (only once per process to avoid stacking)
+  if (listenersRegistered) return;
+  listenersRegistered = true;
+
   schedulerService.on('job-progress', (progress) => {
     mainWindow.webContents.send(channels.JOB_PROGRESS, progress);
   });

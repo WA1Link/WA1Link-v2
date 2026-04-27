@@ -37,10 +37,12 @@ interface ChatEntry {
 // Simple chat store since makeInMemoryStore isn't available in all Baileys versions
 interface ChatStore {
   chats: Map<string, ChatEntry>;
+  ownerAccountId: string | null;
 }
 
 const chatStore: ChatStore = {
   chats: new Map(),
+  ownerAccountId: null,
 };
 
 // Get the store
@@ -68,6 +70,7 @@ interface SocketState {
   accountId: string | null;
   stopRequested: boolean;
   reconnectAttempt: number;
+  isConnecting: boolean;
 }
 
 type SocketEventType =
@@ -95,6 +98,7 @@ export class SocketService extends EventEmitter {
     accountId: null,
     stopRequested: false,
     reconnectAttempt: 0,
+    isConnecting: false,
   };
 
   private mainWindow: BrowserWindow | null = null;
@@ -159,40 +163,63 @@ export class SocketService extends EventEmitter {
     usePairingCode: boolean = false,
     phoneNumber?: string
   ): Promise<void> {
-    // If already connected to same account, skip
-    if (this.state.accountId === account.id && this.state.socket) {
+    // If already connected to same account with a live websocket, skip.
+    // Just having `socket.user` set isn't enough — during a reconnect backoff
+    // the old socket lingers with `user` populated but a closed ws.
+    if (
+      this.state.accountId === account.id &&
+      this.state.socket?.user &&
+      this.isConnected()
+    ) {
       return;
     }
 
-    // Stop any existing connection
-    await this.disconnect();
-
-    this.state.stopRequested = false;
-    this.state.accountId = account.id;
-    this.state.reconnectAttempt = 0;
-    this.usePairingCode = usePairingCode;
-    this.pairingCodeRequested = false;
-    this.targetPhoneNumber = phoneNumber ?? account.phoneNumber;
-
-    // Validate phone number if using pairing code
-    if (usePairingCode && this.targetPhoneNumber) {
-      const validation = phoneNormalizer.validate(this.targetPhoneNumber);
-      if (!validation.valid) {
-        this.emitSocketEvent('error', {
-          accountId: account.id,
-          error: `Invalid phone number: ${validation.error}`,
-        });
-        return;
-      }
+    // Prevent overlapping connect() calls for the same or different accounts
+    if (this.state.isConnecting) {
+      return;
     }
+    this.state.isConnecting = true;
 
-    await this.startSocket(account);
+    try {
+      // Stop any existing connection
+      await this.disconnect();
+
+      this.state.stopRequested = false;
+      this.state.accountId = account.id;
+      this.state.reconnectAttempt = 0;
+      this.usePairingCode = usePairingCode;
+      this.pairingCodeRequested = false;
+      this.targetPhoneNumber = phoneNumber ?? account.phoneNumber;
+
+      // Validate phone number if using pairing code
+      if (usePairingCode && this.targetPhoneNumber) {
+        const validation = phoneNormalizer.validate(this.targetPhoneNumber);
+        if (!validation.valid) {
+          this.emitSocketEvent('error', {
+            accountId: account.id,
+            error: `Invalid phone number: ${validation.error}`,
+          });
+          return;
+        }
+      }
+
+      await this.startSocket(account);
+    } finally {
+      this.state.isConnecting = false;
+    }
   }
 
   /**
    * Start WhatsApp socket
    */
   private async startSocket(account: Account): Promise<void> {
+    // Always clean up any prior socket's listeners before swapping in a new one
+    this.cleanupSocket();
+    if (this.state.socket?.end) {
+      try { this.state.socket.end(undefined); } catch {}
+    }
+    this.state.socket = null;
+
     const baileysModule = await getBaileys();
     const { makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion } = baileysModule;
 
@@ -202,8 +229,12 @@ export class SocketService extends EventEmitter {
     const { state: authState, saveCreds } = await useMultiFileAuthState(sessionDir);
     const { version } = await fetchLatestBaileysVersion();
 
-    // Load persisted chats from DB into memory store
-    chatStore.chats.clear();
+    // Load persisted chats from DB into memory store. Only clear if we're switching
+    // accounts; otherwise (reconnect for same account) preserve in-memory state.
+    if (chatStore.ownerAccountId !== account.id) {
+      chatStore.chats.clear();
+      chatStore.ownerAccountId = account.id;
+    }
     try {
       const savedChats = whatsappChatRepository.getByAccount(account.id);
       for (const row of savedChats) {
@@ -229,11 +260,15 @@ export class SocketService extends EventEmitter {
     const socket = makeWASocket({
       auth: authState,
       logger,
+      // Init queries are needed for the server to mark the session ready for
+      // outbound sends; only the heavy full-history sync is disabled. The
+      // 30s sendMessage timeout in message.service.ts protects against the
+      // case where one of these queries hangs.
       fireInitQueries: true,
+      syncFullHistory: false,
       connectTimeoutMs: 60_000,
       keepAliveIntervalMs: 20_000,
       browser: ['Ubuntu', 'Chrome', '20.0.04'],
-      syncFullHistory: true,
       version,
     });
 
@@ -241,7 +276,17 @@ export class SocketService extends EventEmitter {
     this.state.socket = socket;
 
     // Handle credentials update
-    socket.ev.on('creds.update', saveCreds);
+    socket.ev.on('creds.update', async () => {
+      try {
+        await saveCreds();
+      } catch (err) {
+        console.error('[SocketService] Failed to save creds:', err);
+        this.emitSocketEvent('error', {
+          accountId: account.id,
+          error: `Failed to persist auth credentials: ${(err as Error).message}`,
+        });
+      }
+    });
 
     // Handle connection updates
     socket.ev.on('connection.update', async (update: any) => {
@@ -526,7 +571,8 @@ export class SocketService extends EventEmitter {
    */
   private async requestPairingCode(account: Account): Promise<void> {
     if (!this.state.socket || !this.targetPhoneNumber) return;
-    if (this.state.socket.authState.creds.registered) return;
+    if (this.state.accountId !== account.id) return;
+    if (this.state.socket.authState?.creds?.registered) return;
 
     try {
       if (this.state.stopRequested) return;
@@ -558,14 +604,22 @@ export class SocketService extends EventEmitter {
     if (!this.state.socket?.user) return;
 
     const jid = this.state.socket.user.id;
-    const connectedPhone = jid.split('@')[0].split(':')[0];
+    const connectedPhone = phoneNormalizer.fromJID(jid);
 
-    // Update account with verified phone number
-    accountRepository.update({
-      id: account.id,
-      phoneNumber: connectedPhone,
-      isVerified: true,
-    });
+    // Update account with verified phone number, but only if we got a real phone
+    // back (skip @lid identifiers, which fromJID returns as-is)
+    if (connectedPhone && /^\d+$/.test(connectedPhone)) {
+      accountRepository.update({
+        id: account.id,
+        phoneNumber: connectedPhone,
+        isVerified: true,
+      });
+    } else {
+      accountRepository.update({
+        id: account.id,
+        isVerified: true,
+      });
+    }
 
     this.state.reconnectAttempt = 0;
 
@@ -600,11 +654,23 @@ export class SocketService extends EventEmitter {
       status: 'disconnected',
     });
 
+    // Helper: clear socket/account so a follow-up connect() isn't short-circuited
+    const clearActiveState = () => {
+      this.state.stopRequested = true;
+      this.cleanupSocket();
+      try { if (this.state.socket?.end) this.state.socket.end(undefined); } catch {}
+      this.state.socket = null;
+      this.state.accountId = null;
+      this.state.reconnectAttempt = 0;
+      this.pairingCodeRequested = false;
+    };
+
     switch (code) {
       case DisconnectReason.loggedOut:
       case 401:
         // Session invalid - delete and require re-auth
         await this.deleteSessionFolder(account.id);
+        clearActiveState();
         this.emitSocketEvent('status-changed', {
           accountId: account.id,
           status: 'logged_out',
@@ -613,6 +679,7 @@ export class SocketService extends EventEmitter {
 
       case DisconnectReason.connectionReplaced:
         // Another client took over
+        clearActiveState();
         this.emitSocketEvent('error', {
           accountId: account.id,
           error: 'Connection replaced by another device',
@@ -621,6 +688,7 @@ export class SocketService extends EventEmitter {
 
       case 428:
         // Connection terminated
+        clearActiveState();
         this.emitSocketEvent('error', {
           accountId: account.id,
           error: 'Connection terminated',
@@ -667,13 +735,25 @@ export class SocketService extends EventEmitter {
     });
 
     setTimeout(async () => {
-      if (this.state.stopRequested) return;
-      if (this.state.accountId !== account.id) return;
-
       try {
-        await this.startSocket(account);
-      } catch (error) {
-        this.scheduleReconnect(account);
+        if (this.state.stopRequested) return;
+        if (this.state.accountId !== account.id) return;
+
+        try {
+          await this.startSocket(account);
+        } catch (error) {
+          try {
+            this.scheduleReconnect(account);
+          } catch (innerErr) {
+            console.error('[SocketService] scheduleReconnect failed:', innerErr);
+            this.emitSocketEvent('error', {
+              accountId: account.id,
+              error: `Reconnect scheduling failed: ${(innerErr as Error).message}`,
+            });
+          }
+        }
+      } catch (outerErr) {
+        console.error('[SocketService] Reconnect tick crashed:', outerErr);
       }
     }, delayMs);
   }
@@ -748,6 +828,12 @@ export class SocketService extends EventEmitter {
     this.state.socket = null;
     this.state.accountId = null;
     this.state.reconnectAttempt = 0;
+    this.state.isConnecting = false;
+
+    if (chatStore.ownerAccountId === accountId) {
+      chatStore.chats.clear();
+      chatStore.ownerAccountId = null;
+    }
 
     await this.deleteSessionFolder(accountId);
 
@@ -768,7 +854,17 @@ export class SocketService extends EventEmitter {
    * Check if connected
    */
   isConnected(): boolean {
-    return Boolean(this.state.socket?.user);
+    const sock = this.state.socket;
+    if (!sock?.user) return false;
+    // If the underlying websocket exposes a numeric readyState, require OPEN
+    // (1). Some Baileys versions wrap `ws` in an object that doesn't surface
+    // readyState — in that case fall back to the `user`-truthy check rather
+    // than incorrectly reporting disconnected.
+    const readyState = sock.ws?.readyState;
+    if (typeof readyState === 'number') {
+      return readyState === 1;
+    }
+    return true;
   }
 
   /**
@@ -783,7 +879,8 @@ export class SocketService extends EventEmitter {
    */
   getConnectedPhoneNumber(): string | null {
     if (!this.state.socket?.user) return null;
-    return this.state.socket.user.id.split('@')[0].split(':')[0];
+    const phone = phoneNormalizer.fromJID(this.state.socket.user.id);
+    return /^\d+$/.test(phone) ? phone : null;
   }
 
   /**

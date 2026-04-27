@@ -47,6 +47,8 @@ export interface AccountAPI {
   onStatusChanged: (callback: (connection: AccountConnection) => void) => () => void;
   onQRReceived: (callback: (data: { accountId: string; qrCode: string }) => void) => () => void;
   onPairingCodeReceived: (callback: (data: { accountId: string; code: string }) => void) => () => void;
+  onError: (callback: (data: { accountId: string; error: string }) => void) => () => void;
+  onReconnecting: (callback: (data: { accountId: string; attempt: number; delayMs: number }) => void) => () => void;
 }
 
 // Message IPC
@@ -60,6 +62,17 @@ export interface MessageAPI {
   selectImage: () => Promise<string | null>;
   onProgress: (callback: (progress: SendingProgress) => void) => () => void;
   onComplete: (callback: (result: { sent: number; failed: number; crmStats?: CRMSyncStats }) => void) => () => void;
+  onError: (callback: (error: { message: string }) => void) => () => void;
+  onTargetResult: (
+    callback: (result: {
+      targetId: string;
+      templateId?: string;
+      phoneNumber: string;
+      status: 'sent' | 'failed';
+      sentAt: string;
+      errorMessage?: string;
+    }) => void
+  ) => () => void;
 }
 
 // Contact IPC
