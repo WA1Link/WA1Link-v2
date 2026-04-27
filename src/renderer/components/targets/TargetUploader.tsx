@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as XLSX from 'xlsx';
 import { Target } from '../../../shared/types';
 
@@ -7,6 +8,7 @@ interface TargetUploaderProps {
 }
 
 export const TargetUploader: React.FC<TargetUploaderProps> = ({ onTargetsLoaded }) => {
+  const { t } = useTranslation();
   const handleFileUpload = useCallback(
     (file: File) => {
       const reader = new FileReader();
@@ -114,8 +116,8 @@ export const TargetUploader: React.FC<TargetUploaderProps> = ({ onTargetsLoaded 
           d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
         />
       </svg>
-      <p className="mt-4 text-gray-600">Drag and drop an Excel file here</p>
-      <p className="text-sm text-gray-500 mb-4">or</p>
+      <p className="mt-4 text-gray-600">{t('targets.uploaderDragDrop')}</p>
+      <p className="text-sm text-gray-500 mb-4">{t('targets.uploaderOr')}</p>
       <label className="cursor-pointer">
         <input
           type="file"
@@ -124,11 +126,11 @@ export const TargetUploader: React.FC<TargetUploaderProps> = ({ onTargetsLoaded 
           className="hidden"
         />
         <span className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
-          Browse Files
+          {t('targets.uploaderBrowse')}
         </span>
       </label>
       <p className="mt-4 text-xs text-gray-400">
-        Excel file should have columns: Number (required), Name (optional), and any custom fields
+        {t('targets.uploaderHint')}
       </p>
     </div>
   );

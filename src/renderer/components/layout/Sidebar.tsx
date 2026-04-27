@@ -1,10 +1,13 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../../stores/useUIStore';
 
-const navItems = [
+type NavItemId = 'messaging' | 'contacts' | 'scheduler' | 'crm' | 'settings';
+
+const navItems: Array<{ id: NavItemId; labelKey: string; icon: React.ReactNode }> = [
   {
-    id: 'messaging' as const,
-    label: 'Messaging',
+    id: 'messaging',
+    labelKey: 'nav.messaging',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
@@ -17,8 +20,8 @@ const navItems = [
     ),
   },
   {
-    id: 'contacts' as const,
-    label: 'Contacts',
+    id: 'contacts',
+    labelKey: 'nav.contacts',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
@@ -31,8 +34,8 @@ const navItems = [
     ),
   },
   {
-    id: 'scheduler' as const,
-    label: 'Scheduler',
+    id: 'scheduler',
+    labelKey: 'nav.scheduler',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
@@ -45,8 +48,8 @@ const navItems = [
     ),
   },
   {
-    id: 'crm' as const,
-    label: 'CRM',
+    id: 'crm',
+    labelKey: 'nav.crm',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
@@ -59,8 +62,8 @@ const navItems = [
     ),
   },
   {
-    id: 'settings' as const,
-    label: 'Settings',
+    id: 'settings',
+    labelKey: 'nav.settings',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
@@ -81,6 +84,7 @@ const navItems = [
 ];
 
 export const Sidebar: React.FC = () => {
+  const { t } = useTranslation();
   const currentPage = useUIStore((state) => state.currentPage);
   const navigateTo = useUIStore((state) => state.navigateTo);
   const isSidebarOpen = useUIStore((state) => state.isSidebarOpen);
@@ -127,7 +131,7 @@ export const Sidebar: React.FC = () => {
             >
               {item.icon}
               {isSidebarOpen && (
-                <span className="font-medium">{item.label}</span>
+                <span className="font-medium">{t(item.labelKey as any)}</span>
               )}
             </button>
           );

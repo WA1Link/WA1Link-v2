@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Account, ConnectionStatus } from '../../../shared/types';
 import { Button } from '../ui/Button';
 
@@ -21,20 +22,21 @@ export const AccountList: React.FC<AccountListProps> = ({
   onDelete,
   onSelect,
 }) => {
+  const { t } = useTranslation();
   const getStatusBadge = (accountId: string) => {
     const status = connectionStatus.get(accountId);
 
     switch (status) {
       case 'connected':
-        return <span className="badge-success">Connected</span>;
+        return <span className="badge-success">{t('accounts.status.connected')}</span>;
       case 'connecting':
-        return <span className="badge-warning">Connecting</span>;
+        return <span className="badge-warning">{t('accounts.status.connecting')}</span>;
       case 'qr_ready':
-        return <span className="badge-info">QR Ready</span>;
+        return <span className="badge-info">{t('accounts.status.qrReady')}</span>;
       case 'logged_out':
-        return <span className="badge-error">Logged Out</span>;
+        return <span className="badge-error">{t('accounts.status.loggedOut')}</span>;
       default:
-        return <span className="badge bg-gray-100 text-gray-600">Disconnected</span>;
+        return <span className="badge bg-gray-100 text-gray-600">{t('accounts.status.disconnected')}</span>;
     }
   };
 
@@ -54,8 +56,8 @@ export const AccountList: React.FC<AccountListProps> = ({
             d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
           />
         </svg>
-        <p className="mt-2">No accounts added yet</p>
-        <p className="text-sm">Add an account to get started</p>
+        <p className="mt-2">{t('accounts.noAccountsYet')}</p>
+        <p className="text-sm">{t('accounts.noAccountsHint')}</p>
       </div>
     );
   }
@@ -92,7 +94,7 @@ export const AccountList: React.FC<AccountListProps> = ({
               <div>
                 <h3 className="font-medium text-gray-900">{account.name}</h3>
                 <p className="text-sm text-gray-500">
-                  {account.phoneNumber || 'Phone not verified'}
+                  {account.phoneNumber || t('accounts.phoneNotVerified')}
                 </p>
               </div>
             </div>
@@ -110,7 +112,7 @@ export const AccountList: React.FC<AccountListProps> = ({
                     onDisconnect(account.id);
                   }}
                 >
-                  Disconnect
+                  {t('accounts.disconnect')}
                 </Button>
               ) : (
                 <Button
@@ -122,7 +124,7 @@ export const AccountList: React.FC<AccountListProps> = ({
                     onConnect(account);
                   }}
                 >
-                  Connect
+                  {t('accounts.connect')}
                 </Button>
               )}
 

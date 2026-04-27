@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, ModalFooter } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -25,6 +26,7 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
   delayConfig,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
   const now = new Date();
   const [name, setName] = useState('');
   const [date, setDate] = useState(now.toISOString().split('T')[0]);
@@ -79,12 +81,12 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Schedule Campaign" size="md">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('schedulerUi.form.title')} size="md">
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <Input
-            label="Campaign Name"
-            placeholder="Enter a name for this campaign"
+            label={t('schedulerUi.form.campaignName')}
+            placeholder={t('schedulerUi.form.campaignNamePlaceholder')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             error={errors.name}
@@ -93,19 +95,19 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
 
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Date"
+              label={t('schedulerUi.form.date')}
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               min={today}
-              error={errors.datetime && !date ? 'Required' : undefined}
+              error={errors.datetime && !date ? '!' : undefined}
             />
             <Input
-              label="Time"
+              label={t('schedulerUi.form.time')}
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              error={errors.datetime && !time ? 'Required' : undefined}
+              error={errors.datetime && !time ? '!' : undefined}
             />
           </div>
 
@@ -115,18 +117,21 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
 
           {/* Summary */}
           <div className="p-4 bg-gray-50 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Campaign Summary</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">{t('schedulerUi.form.summary')}</h4>
             <ul className="text-sm text-gray-600 space-y-1">
               <li>
-                <span className="text-gray-500">Templates:</span>{' '}
-                {templates.filter((t) => t.isSelected).length}
+                {t('schedulerUi.form.summaryTemplates', {
+                  count: templates.filter((tpl) => tpl.isSelected).length,
+                })}
               </li>
               <li>
-                <span className="text-gray-500">Recipients:</span> {targets.length}
+                {t('schedulerUi.form.summaryRecipients', { count: targets.length })}
               </li>
               <li>
-                <span className="text-gray-500">Delay:</span>{' '}
-                {delayConfig.perMessageMin / 1000}s - {delayConfig.perMessageMax / 1000}s per message
+                {t('schedulerUi.form.summaryDelay', {
+                  min: delayConfig.perMessageMin / 1000,
+                  max: delayConfig.perMessageMax / 1000,
+                })}
               </li>
             </ul>
           </div>
@@ -134,10 +139,10 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
 
         <ModalFooter>
           <Button type="button" variant="secondary" onClick={handleClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" isLoading={isLoading}>
-            Schedule
+            {t('schedulerUi.form.schedule')}
           </Button>
         </ModalFooter>
       </form>

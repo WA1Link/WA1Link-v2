@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCRMStore } from '../stores/useCRMStore';
 import { useUIStore } from '../stores/useUIStore';
 import { CRMDashboard } from '../components/crm/CRMDashboard';
@@ -23,15 +24,16 @@ import {
 
 type CRMTab = 'customers' | 'products' | 'payments';
 
-const tabs: { id: CRMTab; label: string }[] = [
-  { id: 'customers', label: 'Müştərilər' },
-  { id: 'products', label: 'Məhsullar' },
-  { id: 'payments', label: 'Ödənişlər' },
-];
-
 export const CRMPage: React.FC = () => {
+  const { t } = useTranslation();
   const store = useCRMStore();
   const addToast = useUIStore((s) => s.addToast);
+
+  const tabs: { id: CRMTab; label: string }[] = [
+    { id: 'customers', label: t('crm.customers.title') },
+    { id: 'products', label: t('crm.products.title') },
+    { id: 'payments', label: t('crm.payments.title') },
+  ];
 
   // Modals
   const [customerFormOpen, setCustomerFormOpen] = useState(false);
@@ -54,17 +56,17 @@ export const CRMPage: React.FC = () => {
   const handleCustomerSubmit = async (input: CreateCustomerInput | UpdateCustomerInput) => {
     if ('id' in input) {
       await store.updateCustomer(input);
-      addToast({ type: 'success', message: 'Müştəri yeniləndi' });
+      addToast({ type: 'success', message: t('crm.customers.title') });
     } else {
       await store.createCustomer(input);
-      addToast({ type: 'success', message: 'Müştəri əlavə edildi' });
+      addToast({ type: 'success', message: t('crm.customers.addCustomer') });
     }
     store.fetchStats();
   };
 
   const handleCustomerDelete = async (id: string) => {
     await store.deleteCustomer(id);
-    addToast({ type: 'success', message: 'Müştəri silindi' });
+    addToast({ type: 'success', message: t('crm.customers.deleteConfirm') });
     store.fetchStats();
   };
 
@@ -72,45 +74,45 @@ export const CRMPage: React.FC = () => {
     // Navigate to messaging page with the customer phone number
     // This integrates with the existing messaging system
     useUIStore.getState().navigateTo('messaging');
-    addToast({ type: 'info', message: `${customer.phoneNumber} nömrəsinə mesaj göndərin` });
+    addToast({ type: 'info', message: customer.phoneNumber });
   };
 
   // Product handlers
   const handleProductSubmit = async (input: CreateProductInput | UpdateProductInput) => {
     if ('id' in input) {
       await store.updateProduct(input);
-      addToast({ type: 'success', message: 'Məhsul yeniləndi' });
+      addToast({ type: 'success', message: t('crm.products.title') });
     } else {
       await store.createProduct(input);
-      addToast({ type: 'success', message: 'Məhsul əlavə edildi' });
+      addToast({ type: 'success', message: t('crm.products.addProduct') });
     }
   };
 
   const handleProductDelete = async (id: string) => {
     await store.deleteProduct(id);
-    addToast({ type: 'success', message: 'Məhsul silindi' });
+    addToast({ type: 'success', message: t('crm.products.deleteConfirm') });
   };
 
   // Payment handlers
   const handlePaymentSubmit = async (input: CreatePaymentInput | UpdatePaymentInput) => {
     if ('id' in input) {
       await store.updatePayment(input);
-      addToast({ type: 'success', message: 'Ödəniş yeniləndi' });
+      addToast({ type: 'success', message: t('crm.payments.title') });
     } else {
       await store.createPayment(input);
-      addToast({ type: 'success', message: 'Ödəniş əlavə edildi' });
+      addToast({ type: 'success', message: t('crm.payments.addPayment') });
     }
   };
 
   const handlePaymentDelete = async (id: string) => {
     await store.deletePayment(id);
-    addToast({ type: 'success', message: 'Ödəniş silindi' });
+    addToast({ type: 'success', message: t('crm.payments.deleteConfirm') });
   };
 
   const handleExportCustomers = async () => {
     try {
       await store.exportCustomers();
-      addToast({ type: 'success', message: 'Müştərilər ixrac edildi' });
+      addToast({ type: 'success', message: t('common.confirm') });
     } catch {
       // cancelled or error
     }
@@ -119,7 +121,7 @@ export const CRMPage: React.FC = () => {
   const handleExportPayments = async () => {
     try {
       await store.exportPayments();
-      addToast({ type: 'success', message: 'Ödənişlər ixrac edildi' });
+      addToast({ type: 'success', message: t('common.confirm') });
     } catch {
       // cancelled or error
     }

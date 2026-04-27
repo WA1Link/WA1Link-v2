@@ -1,5 +1,6 @@
 import React from 'react';
 import moment from 'moment';
+import { useTranslation } from 'react-i18next';
 import { ScheduledJob } from '../../../shared/types';
 import { Button } from '../ui/Button';
 import { ProgressBar } from '../ui/ProgressBar';
@@ -15,18 +16,19 @@ export const ScheduledJobList: React.FC<ScheduledJobListProps> = ({
   onCancel,
   onDelete,
 }) => {
+  const { t } = useTranslation();
   const getStatusBadge = (status: ScheduledJob['status']) => {
     switch (status) {
       case 'pending':
-        return <span className="badge-warning">Pending</span>;
+        return <span className="badge-warning">{t('schedulerUi.job.statusPending')}</span>;
       case 'running':
-        return <span className="badge-info">Running</span>;
+        return <span className="badge-info">{t('schedulerUi.job.statusRunning')}</span>;
       case 'completed':
-        return <span className="badge-success">Completed</span>;
+        return <span className="badge-success">{t('schedulerUi.job.statusCompleted')}</span>;
       case 'failed':
-        return <span className="badge-error">Failed</span>;
+        return <span className="badge-error">{t('schedulerUi.job.statusFailed')}</span>;
       case 'cancelled':
-        return <span className="badge bg-gray-100 text-gray-600">Cancelled</span>;
+        return <span className="badge bg-gray-100 text-gray-600">{t('schedulerUi.job.statusCancelled')}</span>;
       default:
         return null;
     }
@@ -48,8 +50,7 @@ export const ScheduledJobList: React.FC<ScheduledJobListProps> = ({
             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <p className="mt-2">No scheduled jobs</p>
-        <p className="text-sm">Schedule a campaign to get started</p>
+        <p className="mt-2">{t('schedulerUi.noJobs')}</p>
       </div>
     );
   }
@@ -62,7 +63,7 @@ export const ScheduledJobList: React.FC<ScheduledJobListProps> = ({
             <div>
               <h3 className="font-medium text-gray-900">{job.name}</h3>
               <p className="text-sm text-gray-500">
-                Scheduled for {moment(job.scheduledAt).format('MMM D, YYYY h:mm A')}
+                {t('schedulerUi.job.scheduledFor', { date: moment(job.scheduledAt).format('MMM D, YYYY h:mm A') })}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -81,9 +82,9 @@ export const ScheduledJobList: React.FC<ScheduledJobListProps> = ({
               />
               <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
                 <span>
-                  {job.sentCount} sent, {job.failedCount} failed
+                  {t('schedulerUi.job.sentFailed', { sent: job.sentCount, failed: job.failedCount })}
                 </span>
-                <span>{job.totalCount} total</span>
+                <span>{t('schedulerUi.job.totalCount', { count: job.totalCount })}</span>
               </div>
             </div>
           )}
@@ -91,15 +92,15 @@ export const ScheduledJobList: React.FC<ScheduledJobListProps> = ({
           {/* Details */}
           <div className="grid grid-cols-3 gap-4 text-sm mb-4">
             <div>
-              <span className="text-gray-500">Templates:</span>
+              <span className="text-gray-500">{t('schedulerUi.job.templates')}</span>
               <span className="ml-2 font-medium">{job.templateIds.length}</span>
             </div>
             <div>
-              <span className="text-gray-500">Recipients:</span>
+              <span className="text-gray-500">{t('schedulerUi.job.recipients')}</span>
               <span className="ml-2 font-medium">{job.totalCount}</span>
             </div>
             <div>
-              <span className="text-gray-500">Created:</span>
+              <span className="text-gray-500">{t('common.createdAt')}:</span>
               <span className="ml-2 font-medium">{moment(job.createdAt).format('MMM D, YYYY h:mm A')}</span>
             </div>
           </div>
@@ -115,12 +116,12 @@ export const ScheduledJobList: React.FC<ScheduledJobListProps> = ({
           <div className="flex items-center gap-2">
             {(job.status === 'pending' || job.status === 'running') && (
               <Button variant="danger" size="sm" onClick={() => onCancel(job.id)}>
-                Cancel
+                {t('common.cancel')}
               </Button>
             )}
             {(job.status === 'completed' || job.status === 'failed' || job.status === 'cancelled') && (
               <Button variant="ghost" size="sm" onClick={() => onDelete(job.id)}>
-                Delete
+                {t('common.delete')}
               </Button>
             )}
           </div>

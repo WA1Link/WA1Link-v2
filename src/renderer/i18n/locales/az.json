@@ -1,0 +1,422 @@
+{
+  "common": {
+    "save": "Yadda saxla",
+    "cancel": "Ləğv et",
+    "delete": "Sil",
+    "edit": "Redaktə et",
+    "close": "Bağla",
+    "loading": "Yüklənir...",
+    "send": "Göndər",
+    "stop": "Dayandır",
+    "yes": "Bəli",
+    "no": "Xeyr",
+    "confirm": "Təsdiqlə",
+    "search": "Axtar",
+    "refresh": "Yenilə",
+    "selectAll": "Hamısını seç",
+    "clear": "Təmizlə",
+    "all": "Hamısı",
+    "name": "Ad",
+    "phone": "Telefon",
+    "status": "Status",
+    "actions": "Əməliyyatlar",
+    "previous": "Əvvəlki",
+    "next": "Növbəti",
+    "show": "Göstər",
+    "hide": "Gizlət",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı!",
+    "createdAt": "Yaradılıb",
+    "expand": "Aç",
+    "collapse": "Bağla"
+  },
+  "nav": {
+    "messaging": "Mesajlar",
+    "contacts": "Kontaktlar",
+    "scheduler": "Planlayıcı",
+    "crm": "CRM",
+    "settings": "Tənzimləmələr"
+  },
+  "header": {
+    "noAccount": "Hesab qoşulmayıb",
+    "status": {
+      "connected": "Qoşulu",
+      "connecting": "Qoşulur...",
+      "qrReady": "QR kodu skan edin",
+      "loggedOut": "Çıxış edildi",
+      "disconnected": "Ayrılıb"
+    }
+  },
+  "language": {
+    "switcher": "Dil",
+    "english": "İngilis dili",
+    "russian": "Rus dili",
+    "azerbaijani": "Azərbaycan dili"
+  },
+  "pages": {
+    "messaging": {
+      "title": "Mesajlar",
+      "templates": "Mesaj şablonları",
+      "templatesSelected": "{{total}}-dən {{selected}} seçilib",
+      "newTemplate": "Yeni şablon",
+      "targets": "Alıcılar",
+      "scheduleForLater": "Sonraya planla",
+      "scheduleForLaterDescription": "Müəyyən vaxtda göndərmək istəyirsiniz? Kampaniyanı planlayın və o avtomatik işləyəcək.",
+      "scheduleCampaign": "Kampaniyanı planla",
+      "campaignScheduled": "Kampaniya planlandı",
+      "templateCreated": "Şablon yaradıldı",
+      "templateUpdated": "Şablon yeniləndi",
+      "templateDeleted": "Şablon silindi",
+      "deleteTemplateConfirm": "Bu şablonu silmək istədiyinizə əminsiniz?",
+      "selectAccountFirst": "Əvvəlcə hesab qoşun",
+      "selectTemplateFirst": "Ən azı bir şablon seçin",
+      "uploadTargetsFirst": "Alıcı kontaktlarını yükləyin",
+      "sendingComplete": "Göndərmə tamamlandı: {{sent}} göndərildi, {{failed}} uğursuz",
+      "sendingCompleteWithCrm": "Göndərmə tamamlandı: {{sent}} göndərildi, {{failed}} uğursuz | CRM: {{newContacts}} yeni, {{skippedContacts}} mövcud",
+      "sendingStopped": "Göndərmə dayandırıldı",
+      "previewTitle": "Önizləmə: {{name}}",
+      "previewNoContent": "Bu şablonda məzmun yoxdur.",
+      "previewVariables": "Aşkarlanan dəyişənlər: {{variables}}"
+    },
+    "contacts": {
+      "title": "Kontaktların çıxarılması",
+      "description": "WhatsApp qruplarından və şəxsi söhbətlərdən kontaktları çıxarın"
+    },
+    "scheduler": {
+      "title": "Planlanmış kampaniyalar",
+      "description": "Planlanmış mesaj kampaniyalarınıza baxın və idarə edin"
+    },
+    "settings": {
+      "title": "Tənzimləmələr",
+      "license": {
+        "title": "Lisenziya məlumatı",
+        "status": "Lisenziya statusu",
+        "active": "Aktiv",
+        "inactive": "Qeyri-aktiv",
+        "valid": "Etibarlı",
+        "invalid": "Etibarsız",
+        "maxAccounts": "Maks. hesab",
+        "expires": "Bitir",
+        "deviceFingerprint": "Cihaz barmaq izi",
+        "loading": "Yüklənir...",
+        "change": "Lisenziyanı dəyişdir",
+        "changeWarning": "Cari lisenziya silinəcək və yenisini daxil etməli olacaqsınız. Bütün məlumatlarınız (müştərilər, məhsullar, ödənişlər) qorunacaq.",
+        "confirmRemove": "Bəli, sil"
+      },
+      "about": {
+        "title": "Haqqında",
+        "appName": "WA1Link",
+        "version": "Versiya {{version}}",
+        "tagline": "WA1Link — daxili CRM, planlayıcı və alıcı üzrə göndərmə tarixçəsi olan güclü WhatsApp toplu mesajlaşma alətidir.",
+        "stack": "Electron, React və Baileys ilə hazırlanıb"
+      }
+    },
+    "crm": {
+      "title": "CRM",
+      "tabs": {
+        "dashboard": "İdarə paneli",
+        "customers": "Müştərilər",
+        "products": "Məhsullar",
+        "payments": "Ödənişlər"
+      },
+      "stats": {
+        "totalCustomers": "Cəmi müştərilər",
+        "totalProducts": "Cəmi məhsullar",
+        "totalPayments": "Cəmi ödənişlər",
+        "totalRevenue": "Ümumi gəlir"
+      }
+    }
+  },
+  "accounts": {
+    "managerTitle": "WhatsApp hesabları",
+    "managerDescription": "Qoşulmuş WhatsApp hesablarınızı idarə edin",
+    "addAccount": "Hesab əlavə et",
+    "accountName": "Hesab adı",
+    "accountNamePlaceholder": "Hesab adını daxil edin",
+    "defaultCountry": "Standart ölkə",
+    "defaultCountryHint": "Ölkə kodu mesaj göndərərkən telefon nömrələrinin normallaşdırılması üçün istifadə olunacaq.",
+    "noAccountsYet": "Hələ hesab əlavə edilməyib",
+    "noAccountsHint": "Başlamaq üçün hesab əlavə edin",
+    "phoneNotVerified": "Telefon təsdiqlənməyib",
+    "connect": "Qoşul",
+    "disconnect": "Ayrıl",
+    "deleteConfirm": "Bu hesabı silmək istədiyinizə əminsiniz?",
+    "added": "Hesab uğurla əlavə edildi",
+    "deleted": "Hesab silindi",
+    "connectedToast": "WhatsApp-a qoşuldu",
+    "loggedOutToast": "Sessiya bitdi. Yenidən qoşulun.",
+    "disconnectedToast": "WhatsApp-dan ayrıldı",
+    "status": {
+      "connected": "Qoşulu",
+      "connecting": "Qoşulur",
+      "qrReady": "QR hazırdır",
+      "loggedOut": "Çıxış edildi",
+      "disconnected": "Ayrılıb"
+    },
+    "qr": {
+      "connectTitle": "Qoş: {{name}}",
+      "method": "Qoşulma üsulu",
+      "qrCode": "QR kod",
+      "qrCodeHint": "Telefonla skan edin",
+      "pairingCode": "Cütləşmə kodu",
+      "pairingCodeHint": "Telefon nömrəsi daxil edin",
+      "country": "Ölkə",
+      "phoneNumber": "Telefon nömrəsi",
+      "phoneNumberPlaceholder": "Telefon nömrənizi daxil edin",
+      "phoneNumberHint": "WhatsApp-da qeydiyyatdan keçmiş nömrəni daxil edin",
+      "showQr": "QR kodu göstər",
+      "getPairingCode": "Cütləşmə kodu al",
+      "scanInstruction": "Bu QR kodu WhatsApp ilə skan edin",
+      "qrSteps": {
+        "1": "1. Telefonunuzda WhatsApp-ı açın",
+        "2": "2. Menyu və ya Tənzimləmələrə toxunun və Qoşulmuş cihazları seçin",
+        "3": "3. Cihazı bağla seçin",
+        "4": "4. Telefonu bu ekrana tutun ki, QR kod yaxalansın"
+      },
+      "pairingSteps": {
+        "1": "1. Telefonunuzda WhatsApp-ı açın",
+        "2": "2. Menyu və ya Tənzimləmələrə toxunun və Qoşulmuş cihazları seçin",
+        "3": "3. Cihazı bağla seçin",
+        "4": "4. «Telefon nömrəsi ilə bağla» seçin",
+        "5": "5. Telefon nömrənizi və yuxarıdakı kodu daxil edin"
+      },
+      "enterCodeInstruction": "Bu kodu WhatsApp-a daxil edin",
+      "waitingForQr": "QR kod gözlənilir...",
+      "requestingCode": "Cütləşmə kodu istənilir..."
+    }
+  },
+  "messageTemplates": {
+    "noTemplates": "Hələ mesaj şablonu yoxdur",
+    "noTemplatesHint": "Başlamaq üçün şablon yaradın",
+    "untitled": "Adsız şablon",
+    "moreItems": "+{{count}} əlavə",
+    "preview": "Şablonu önizlə",
+    "edit": "Şablonu redaktə et",
+    "delete": "Şablonu sil",
+    "composer": {
+      "createTitle": "Mesaj şablonu yarat",
+      "editTitle": "Mesaj şablonunu redaktə et",
+      "templateName": "Şablon adı",
+      "templateNamePlaceholder": "Şablon adını daxil edin (istəyə bağlı)",
+      "insertVariable": "Dəyişən əlavə et",
+      "messageContent": "Mesaj məzmunu",
+      "messageContentPlaceholder": "Mesaj mətnini daxil edin...",
+      "imageLabel": "Şəkil: {{filename}}",
+      "chooseImage": "Şəkil seç",
+      "addText": "+ Mətn əlavə et",
+      "addImage": "+ Şəkil əlavə et",
+      "saveChanges": "Yadda saxla",
+      "create": "Şablon yarat"
+    }
+  },
+  "targets": {
+    "uploaderDragDrop": "Excel faylını buraya sürüşdürüb buraxın",
+    "uploaderOr": "və ya",
+    "uploaderBrowse": "Fayl seç",
+    "uploaderHint": "Excel faylında bu sütunlar olmalıdır: Number (vacib), Name (istəyə bağlı) və istənilən xüsusi sahələr",
+    "listTitle": "Alıcılar siyahısı",
+    "loadedCount": "{{count}} kontakt yükləndi",
+    "clearAll": "Hamısını təmizlə",
+    "empty": "Alıcılar yüklənməyib"
+  },
+  "campaign": {
+    "launchTitle": "Kampaniyanı başlat",
+    "templatesCount": "Şablonlar",
+    "recipientsCount": "Alıcılar",
+    "estimatedDuration": "Təxmini müddət",
+    "needAccount": "Əvvəlcə WhatsApp hesabı qoşun",
+    "needTemplate": "Ən azı bir mesaj şablonu seçin",
+    "needTargets": "Alıcı nömrələri olan Excel faylı yükləyin",
+    "startSending": "Göndərməyə başla"
+  },
+  "sending": {
+    "inProgress": "Mesajlar göndərilir...",
+    "complete": "Göndərmə tamamlandı",
+    "stopSending": "Göndərməni dayandır",
+    "progress": "Tərəqqi",
+    "total": "Cəmi",
+    "sent": "Göndərildi",
+    "failed": "Uğursuz",
+    "newCrmContacts": "Yeni CRM kontaktları",
+    "alreadyInCrm": "Artıq CRM-də",
+    "currentTarget": "Cari: {{target}}",
+    "failedMessages": "Uğursuz mesajlar ({{count}})"
+  },
+  "delays": {
+    "title": "Gecikmə tənzimləmələri",
+    "messageDelay": "Mesajlararası gecikmə (ms)",
+    "minimum": "Minimum",
+    "maximum": "Maksimum",
+    "minMessageHint": "Mesajlar arasında min. gecikmə",
+    "maxMessageHint": "Mesajlar arasında maks. gecikmə",
+    "batchSettings": "Paket tənzimləmələri",
+    "batchSize": "Paket ölçüsü",
+    "batchSizeHint": "Fasilədən əvvəl neçə mesaj",
+    "batchDelayMin": "Paket gecikməsi min. (ms)",
+    "batchDelayMax": "Paket gecikməsi maks. (ms)",
+    "preview": "Önizləmə",
+    "previewWait": "Mesajlar arasında {{min}}s – {{max}}s gözlə",
+    "previewBatch": "Hər {{count}} mesajdan sonra:",
+    "previewBatchBreak": "{{min}}s – {{max}}s fasilə",
+    "resetDefaults": "Standartlara qaytar",
+    "done": "Hazır"
+  },
+  "schedulerUi": {
+    "running": "İşləyir ({{count}})",
+    "upcoming": "Gözlənilən ({{count}})",
+    "history": "Tarixçə ({{count}})",
+    "messageHistoryTitle": "Göndərilmiş mesajların tarixçəsi",
+    "noJobs": "Planlanmış tapşırıq yoxdur",
+    "noJobsHint": "Mesajlar bölməsinə keçin və planlanmış kampaniya yaratmaq üçün Planlama seçimini istifadə edin.",
+    "form": {
+      "title": "Kampaniyanı planla",
+      "campaignName": "Kampaniya adı",
+      "campaignNamePlaceholder": "Bu kampaniya üçün ad daxil edin",
+      "date": "Tarix",
+      "time": "Vaxt",
+      "summary": "Kampaniya xülasəsi",
+      "summaryTemplates": "Şablonlar: {{count}}",
+      "summaryRecipients": "Alıcılar: {{count}}",
+      "summaryDelay": "Gecikmə: hər mesaj üçün {{min}}s – {{max}}s",
+      "schedule": "Planla"
+    },
+    "job": {
+      "statusPending": "Gözləyir",
+      "statusRunning": "İşləyir",
+      "statusCompleted": "Tamamlandı",
+      "statusFailed": "Uğursuz",
+      "statusCancelled": "Ləğv edilib",
+      "scheduledFor": "{{date}} üçün planlanıb",
+      "sentFailed": "{{sent}} göndərildi, {{failed}} uğursuz",
+      "totalCount": "cəmi: {{count}}",
+      "templates": "Şablonlar:",
+      "recipients": "Alıcılar:"
+    },
+    "history": {
+      "campaign": "Kampaniya",
+      "searchPlaceholder": "Telefon/ad axtarışı",
+      "entries": "{{count}} qeyd",
+      "exportCsv": "CSV-yə ixrac",
+      "loading": "Yüklənir…",
+      "empty": "Hələ göndərilmiş mesaj yoxdur. Tarixçəni doldurmaq üçün kampaniya başladın.",
+      "template": "Şablon",
+      "sentAt": "Göndərilib",
+      "error": "Xəta",
+      "page": "Səhifə {{page}} / {{total}}"
+    }
+  },
+  "contactsExtractor": {
+    "groupsTab": "Qruplar",
+    "personalTab": "Şəxsi",
+    "needAccount": "Əvvəlcə WhatsApp hesabı qoşun",
+    "exportToExcel": "Excel-ə ixrac",
+    "groupsSelected": "{{count}} qrup seçilib",
+    "chatsSelected": "{{count}} söhbət seçilib",
+    "groups": {
+      "title": "WhatsApp qrupları",
+      "selectedSummary": "{{groups}} qrup seçilib ({{participants}} iştirakçı)",
+      "empty": "Qrup tapılmadı",
+      "emptyHint": "WhatsApp hesabınızı qoşun və yeniləyin"
+    },
+    "personal": {
+      "title": "Şəxsi kontaktlar",
+      "selectedSummary": "{{total}}-dən {{selected}} seçilib",
+      "searchPlaceholder": "Ad və ya nömrə ilə axtar...",
+      "empty": "Şəxsi söhbət tapılmadı",
+      "emptyHint": "Söhbət tarixçəsi qoşulduqdan sonra sinxronlaşır.",
+      "emptyHint2": "Yeni söhbətləri yoxlamaq üçün Yenilə düyməsinə basın.",
+      "noMatch": "Axtarışınıza uyğun kontakt yoxdur",
+      "noMatchHint": "Başqa ad və ya nömrə yoxlayın.",
+      "showing": "{{total}} kontaktdan {{shown}} göstərilir"
+    }
+  },
+  "agreement": {
+    "title": "Proqram istifadə müqaviləsi",
+    "description": "Davam etmək üçün müqaviləni oxuyub qəbul edin"
+  },
+  "license": {
+    "verifying": "Lisenziya yoxlanılır...",
+    "form": {
+      "title": "Lisenziya açarını daxil edin",
+      "placeholder": "Lisenziya açarınızı buraya yapışdırın...",
+      "deviceFingerprint": "Cihaz barmaq izi",
+      "activate": "Lisenziyanı aktivləşdir",
+      "noLicense": "Lisenziyanız yoxdur?",
+      "purchase": "Lisenziya al"
+    }
+  },
+  "update": {
+    "available": "Yeniləmə mövcuddur",
+    "downloading": "Yeni versiya v{{version}} tapıldı. Yüklənir...",
+    "downloadingShort": "Yüklənir",
+    "downloaded": "Versiya v{{version}} yükləndi. Quraşdırmaq üçün proqramı yenidən başladın.",
+    "restart": "İndi yenidən başlat",
+    "later": "Sonra"
+  },
+  "crm": {
+    "dashboard": {
+      "title": "İdarə paneli",
+      "totalCustomers": "Cəmi müştərilər",
+      "totalProducts": "Cəmi məhsullar",
+      "totalPayments": "Cəmi ödənişlər",
+      "totalRevenue": "Ümumi gəlir"
+    },
+    "customers": {
+      "title": "Müştərilər",
+      "addCustomer": "Müştəri əlavə et",
+      "search": "Müştəri axtar...",
+      "name": "Ad",
+      "phone": "Telefon",
+      "email": "E-poçt",
+      "company": "Şirkət",
+      "notes": "Qeydlər",
+      "createdAt": "Yaradılıb",
+      "noCustomers": "Hələ müştəri yoxdur",
+      "deleteConfirm": "Bu müştərini silirsiniz?",
+      "form": {
+        "createTitle": "Müştəri əlavə et",
+        "editTitle": "Müştərini redaktə et",
+        "namePlaceholder": "Müştəri adı",
+        "phonePlaceholder": "Telefon nömrəsi",
+        "emailPlaceholder": "E-poçt",
+        "companyPlaceholder": "Şirkət",
+        "notesPlaceholder": "Qeydlər"
+      }
+    },
+    "products": {
+      "title": "Məhsullar",
+      "addProduct": "Məhsul əlavə et",
+      "search": "Məhsul axtar...",
+      "name": "Ad",
+      "price": "Qiymət",
+      "description": "Təsvir",
+      "noProducts": "Hələ məhsul yoxdur",
+      "deleteConfirm": "Bu məhsulu silirsiniz?",
+      "form": {
+        "createTitle": "Məhsul əlavə et",
+        "editTitle": "Məhsulu redaktə et",
+        "namePlaceholder": "Məhsul adı",
+        "pricePlaceholder": "Qiymət",
+        "descriptionPlaceholder": "Təsvir"
+      }
+    },
+    "payments": {
+      "title": "Ödənişlər",
+      "addPayment": "Ödəniş əlavə et",
+      "search": "Ödəniş axtar...",
+      "customer": "Müştəri",
+      "amount": "Məbləğ",
+      "date": "Tarix",
+      "method": "Üsul",
+      "noPayments": "Hələ ödəniş yoxdur",
+      "deleteConfirm": "Bu ödənişi silirsiniz?",
+      "form": {
+        "createTitle": "Ödəniş əlavə et",
+        "editTitle": "Ödənişi redaktə et",
+        "amountPlaceholder": "Məbləğ",
+        "methodPlaceholder": "Üsul",
+        "notesPlaceholder": "Qeydlər"
+      }
+    }
+  }
+}

@@ -1,30 +1,32 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLicenseStore } from '../stores/useLicenseStore';
 import { Button } from '../components/ui/Button';
 import { AGREEMENT_TEXT } from '../components/agreement/agreementText';
 
 export const SettingsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { licenseState, fingerprint, clearLicense } = useLicenseStore();
   const [showAgreement, setShowAgreement] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+      <h1 className="text-2xl font-bold text-gray-900">{t('pages.settings.title')}</h1>
 
       {/* License Information */}
       <div className="card">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">License Information</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('pages.settings.license.title')}</h2>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div>
-              <p className="text-sm text-gray-500">License Status</p>
+              <p className="text-sm text-gray-500">{t('pages.settings.license.status')}</p>
               <p className="font-medium text-gray-900">
                 {licenseState.isValid ? (
-                  <span className="text-green-600">Active</span>
+                  <span className="text-green-600">{t('pages.settings.license.active')}</span>
                 ) : (
-                  <span className="text-red-600">Inactive</span>
+                  <span className="text-red-600">{t('pages.settings.license.inactive')}</span>
                 )}
               </p>
             </div>
@@ -33,17 +35,17 @@ export const SettingsPage: React.FC = () => {
                 licenseState.isValid ? 'badge-success' : 'badge-error'
               }`}
             >
-              {licenseState.isValid ? 'Valid' : 'Invalid'}
+              {licenseState.isValid ? t('pages.settings.license.valid') : t('pages.settings.license.invalid')}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-500">Max Accounts</p>
+              <p className="text-sm text-gray-500">{t('pages.settings.license.maxAccounts')}</p>
               <p className="font-medium text-gray-900">{licenseState.maxAccounts || '—'}</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-500">Expires</p>
+              <p className="text-sm text-gray-500">{t('pages.settings.license.expires')}</p>
               <p className="font-medium text-gray-900">
                 {licenseState.expiresAt
                   ? new Date(licenseState.expiresAt).toLocaleDateString()
@@ -53,9 +55,9 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-500 mb-1">Device Fingerprint</p>
+            <p className="text-sm text-gray-500 mb-1">{t('pages.settings.license.deviceFingerprint')}</p>
             <p className="font-mono text-sm text-gray-700 break-all">
-              {fingerprint || 'Loading...'}
+              {fingerprint || t('pages.settings.license.loading')}
             </p>
           </div>
 
@@ -65,12 +67,12 @@ export const SettingsPage: React.FC = () => {
               variant="secondary"
               onClick={() => setShowConfirm(true)}
             >
-              Change License
+              {t('pages.settings.license.change')}
             </Button>
           ) : (
             <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
               <p className="text-sm text-yellow-800">
-                Your current license will be removed and you will need to enter a new one. All your data (customers, products, payments) will be preserved.
+                {t('pages.settings.license.changeWarning')}
               </p>
               <div className="flex gap-2">
                 <Button
@@ -81,14 +83,14 @@ export const SettingsPage: React.FC = () => {
                     setShowConfirm(false);
                   }}
                 >
-                  Yes, remove
+                  {t('pages.settings.license.confirmRemove')}
                 </Button>
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => setShowConfirm(false)}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
               </div>
             </div>
@@ -98,7 +100,7 @@ export const SettingsPage: React.FC = () => {
 
       {/* About */}
       <div className="card">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">About</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('pages.settings.about.title')}</h2>
 
         <div className="space-y-4">
           <div className="flex items-center gap-4">
@@ -108,21 +110,15 @@ export const SettingsPage: React.FC = () => {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">WA1Link</h3>
-              <p className="text-sm text-gray-500">Version 2.0.0</p>
+              <h3 className="font-semibold text-gray-900">{t('pages.settings.about.appName')}</h3>
+              <p className="text-sm text-gray-500">{t('pages.settings.about.version', { version: '2.0.0' })}</p>
             </div>
           </div>
 
-          <p className="text-sm text-gray-600">
-            WA1Link is a powerful WhatsApp bulk messaging tool designed for businesses
-            and professionals. Send personalized messages to multiple contacts with
-            smart delays and scheduling capabilities.
-          </p>
+          <p className="text-sm text-gray-600">{t('pages.settings.about.tagline')}</p>
 
           <div className="pt-4 border-t">
-            <p className="text-xs text-gray-500">
-              Built with Electron, React, and Baileys
-            </p>
+            <p className="text-xs text-gray-500">{t('pages.settings.about.stack')}</p>
           </div>
         </div>
       </div>
@@ -131,27 +127,20 @@ export const SettingsPage: React.FC = () => {
       <div className="card">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">
-            İstifadə Müqaviləsi
+            {t('agreement.title')}
           </h2>
           <Button
             variant="secondary"
             size="sm"
             onClick={() => setShowAgreement(!showAgreement)}
           >
-            {showAgreement ? 'Gizlə' : 'Göstər'}
+            {showAgreement ? t('common.hide') : t('common.show')}
           </Button>
-        </div>
-
-        <div className="flex items-center gap-2 mb-4">
-          <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span className="text-sm text-green-700 font-medium">Müqavilə qəbul edilib</span>
         </div>
 
         {fingerprint && (
           <div className="p-4 bg-gray-50 rounded-lg mb-4">
-            <p className="text-sm text-gray-500 mb-1">Device Fingerprint</p>
+            <p className="text-sm text-gray-500 mb-1">{t('pages.settings.license.deviceFingerprint')}</p>
             <p className="font-mono text-sm text-gray-700 break-all">{fingerprint}</p>
           </div>
         )}

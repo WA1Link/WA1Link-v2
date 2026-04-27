@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, ModalFooter } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { Dropdown } from '../ui/Dropdown';
@@ -32,6 +33,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
   payment,
   preselectedCustomerId,
 }) => {
+  const { t } = useTranslation();
   const [customerId, setCustomerId] = useState('');
   const [productId, setProductId] = useState('');
   const [productPrice, setProductPrice] = useState('');
@@ -82,27 +84,23 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
     const discountNum = parseFloat(discount) || 0;
 
     if (!isEditing && !customerId) {
-      setError('Müştəri seçin.');
+      setError(t('crm.payments.customer'));
       return;
     }
     if (!productId) {
-      setError('Məhsul seçin.');
+      setError(t('crm.products.title'));
       return;
     }
     if (isNaN(priceNum) || priceNum <= 0) {
-      setError('Düzgün qiymət daxil edin.');
+      setError(t('crm.products.price'));
       return;
     }
-    if (discountNum < 0) {
-      setError('Endirim mənfi ola bilməz.');
-      return;
-    }
-    if (discountNum > priceNum) {
-      setError('Endirim məhsulun qiymətindən çox ola bilməz.');
+    if (discountNum < 0 || discountNum > priceNum) {
+      setError(t('crm.payments.amount'));
       return;
     }
     if (!paymentDate) {
-      setError('Tarix seçin.');
+      setError(t('crm.payments.date'));
       return;
     }
 
@@ -157,7 +155,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? 'Ödənişi redaktə et' : 'Yeni ödəniş'}
+      title={isEditing ? t('crm.payments.form.editTitle') : t('crm.payments.form.createTitle')}
       size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -169,25 +167,25 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
         {!isEditing && (
           <Dropdown
-            label="Müştəri"
+            label={t('crm.payments.customer')}
             options={customerOptions}
             value={customerId}
             onChange={setCustomerId}
-            placeholder="Müştəri seçin"
+            placeholder={t('crm.payments.customer')}
           />
         )}
 
         <Dropdown
-          label="Məhsul"
+          label={t('crm.products.title')}
           options={productOptions}
           value={productId}
           onChange={setProductId}
-          placeholder="Məhsul seçin"
+          placeholder={t('crm.products.title')}
         />
 
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="Qiymət (AZN)"
+            label={t('crm.products.price')}
             type="number"
             step="0.01"
             min="0"
@@ -196,7 +194,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
           />
 
           <Input
-            label="Endirim (AZN)"
+            label={t('crm.payments.amount')}
             type="number"
             step="0.01"
             min="0"
@@ -206,20 +204,20 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
         </div>
 
         <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-          <span className="text-sm text-gray-600">Yekun məbləğ: </span>
-          <span className="text-lg font-bold text-green-700">{finalAmount.toFixed(2)} AZN</span>
+          <span className="text-sm text-gray-600">{t('crm.payments.amount')}: </span>
+          <span className="text-lg font-bold text-green-700">{finalAmount.toFixed(2)}</span>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <Dropdown
-            label="Ödəniş üsulu"
+            label={t('crm.payments.method')}
             options={methodOptions}
             value={paymentMethod}
             onChange={setPaymentMethod}
           />
 
           <Input
-            label="Tarix"
+            label={t('crm.payments.date')}
             type="date"
             value={paymentDate}
             onChange={(e) => setPaymentDate(e.target.value)}
@@ -229,10 +227,10 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
         <ModalFooter>
           <Button variant="secondary" onClick={onClose} type="button">
-            Ləğv et
+            {t('common.cancel')}
           </Button>
           <Button type="submit" isLoading={isSubmitting}>
-            {isEditing ? 'Yadda saxla' : 'Əlavə et'}
+            {isEditing ? t('common.save') : t('crm.payments.addPayment')}
           </Button>
         </ModalFooter>
       </form>

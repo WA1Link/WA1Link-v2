@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMessageStore } from '../stores/useMessageStore';
 import { useSendingStore } from '../stores/useSendingStore';
 import { useAccountStore } from '../stores/useAccountStore';
@@ -18,6 +19,7 @@ import { Modal } from '../components/ui/Modal';
 import { CreateTemplateInput, UpdateTemplateInput, Target, MessageTemplate } from '../../shared/types';
 
 export const MessagingPage: React.FC = () => {
+  const { t } = useTranslation();
   const [showComposer, setShowComposer] = useState(false);
   const [showDelaySettings, setShowDelaySettings] = useState(false);
   const [showScheduleForm, setShowScheduleForm] = useState(false);
@@ -65,10 +67,15 @@ export const MessagingPage: React.FC = () => {
 
     const unsubComplete = window.electronAPI.message.onComplete((result) => {
       onSendingComplete(result);
-      const crmInfo = result.crmStats
-        ? ` | CRM: ${result.crmStats.newContacts} new, ${result.crmStats.skippedContacts} existing`
-        : '';
-      addToast({ type: 'success', message: `Sending complete: ${result.sent} sent, ${result.failed} failed${crmInfo}` });
+      const message = result.crmStats
+        ? t('pages.messaging.sendingCompleteWithCrm', {
+            sent: result.sent,
+            failed: result.failed,
+            newContacts: result.crmStats.newContacts,
+            skippedContacts: result.crmStats.skippedContacts,
+          })
+        : t('pages.messaging.sendingComplete', { sent: result.sent, failed: result.failed });
+      addToast({ type: 'success', message });
     });
 
     return () => {
@@ -86,10 +93,10 @@ export const MessagingPage: React.FC = () => {
     try {
       if ('id' in input) {
         await updateTemplate(input);
-        addToast({ type: 'success', message: 'Template updated' });
+        addToast({ type: 'success', message: t('pages.messaging.templateUpdated') });
       } else {
         await createTemplate(input);
-        addToast({ type: 'success', message: 'Template created' });
+        addToast({ type: 'success', message: t('pages.messaging.templateCreated') });
       }
       setShowComposer(false);
       setEditingTemplate(null);
@@ -99,10 +106,10 @@ export const MessagingPage: React.FC = () => {
   };
 
   const handleDeleteTemplate = async (id: string) => {
-    if (confirm('Are you sure you want to delete this template?')) {
+    if (confirm(t('pages.messaging.deleteTemplateConfirm'))) {
       try {
         await deleteTemplate(id);
-        addToast({ type: 'success', message: 'Template deleted' });
+        addToast({ type: 'success', message: t('pages.messaging.templateDeleted') });
       } catch (error) {
         addToast({ type: 'error', message: (error as Error).message });
       }
@@ -111,18 +118,18 @@ export const MessagingPage: React.FC = () => {
 
   const handleStartSending = async () => {
     if (!activeAccountId) {
-      addToast({ type: 'error', message: 'Please connect an account first' });
+      addToast({ type: 'error', message: t('pages.messaging.selectAccountFirst') });
       return;
     }
 
     const selectedTemplates = getSelectedTemplates();
     if (selectedTemplates.length === 0) {
-      addToast({ type: 'error', message: 'Please select at least one template' });
+      addToast({ type: 'error', message: t('pages.messaging.selectTemplateFirst') });
       return;
     }
 
     if (targets.length === 0) {
-      addToast({ type: 'error', message: 'Please upload target contacts' });
+      addToast({ type: 'error', message: t('pages.messaging.uploadTargetsFirst') });
       return;
     }
 
@@ -142,14 +149,14 @@ export const MessagingPage: React.FC = () => {
 
   const handleStopSending = async () => {
     await stopSending();
-    addToast({ type: 'info', message: 'Sending stopped' });
+    addToast({ type: 'info', message: t('pages.messaging.sendingStopped') });
   };
 
   const handleSchedule = async (input: any) => {
     try {
       await createJob(input);
       setShowScheduleForm(false);
-      addToast({ type: 'success', message: 'Campaign scheduled' });
+      addToast({ type: 'success', message: t('pages.messaging.campaignScheduled') });
     } catch (error) {
       addToast({ type: 'error', message: (error as Error).message });
     }
@@ -159,7 +166,7 @@ export const MessagingPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Messaging</h1>
+      <h1 className="text-2xl font-bold text-gray-900">{t('pages.messaging.title')}</h1>
 
       {/* Account Manager */}
       <AccountManager />
@@ -178,9 +185,12 @@ export const MessagingPage: React.FC = () => {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Message Templates</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('pages.messaging.templates')}</h2>
               <p className="text-sm text-gray-500">
-                {selectedTemplates.length} of {templates.length} selected
+                {t('pages.messaging.templatesSelected', {
+                  selected: selectedTemplates.length,
+                  total: templates.length,
+                })}
               </p>
             </div>
             <Button
@@ -191,7 +201,7 @@ export const MessagingPage: React.FC = () => {
                 </svg>
               }
             >
-              New Template
+              {t('pages.messaging.newTemplate')}
             </Button>
           </div>
 
@@ -211,7 +221,7 @@ export const MessagingPage: React.FC = () => {
 
         {/* Targets */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Target Contacts</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('pages.messaging.targets')}</h2>
 
           {targets.length === 0 ? (
             <TargetUploader onTargetsLoaded={setTargets} />
@@ -235,9 +245,9 @@ export const MessagingPage: React.FC = () => {
 
         {/* Schedule Button */}
         <div className="card">
-          <h3 className="font-semibold text-gray-900 mb-4">Schedule for Later</h3>
+          <h3 className="font-semibold text-gray-900 mb-4">{t('pages.messaging.scheduleForLater')}</h3>
           <p className="text-sm text-gray-500 mb-4">
-            Want to send at a specific time? Schedule your campaign and let it run automatically.
+            {t('pages.messaging.scheduleForLaterDescription')}
           </p>
           <Button
             variant="secondary"
@@ -257,7 +267,7 @@ export const MessagingPage: React.FC = () => {
               </svg>
             }
           >
-            Schedule Campaign
+            {t('pages.messaging.scheduleCampaign')}
           </Button>
         </div>
       </div>
@@ -294,13 +304,13 @@ export const MessagingPage: React.FC = () => {
       <Modal
         isOpen={!!previewTemplate}
         onClose={() => setPreviewTemplate(null)}
-        title={`Preview: ${previewTemplate?.name || 'Untitled'}`}
+        title={t('pages.messaging.previewTitle', { name: previewTemplate?.name || t('messageTemplates.untitled') })}
         size="md"
       >
         {previewTemplate && (
           <div className="space-y-3">
             {previewTemplate.contents.length === 0 ? (
-              <p className="text-sm text-red-600">This template has no content.</p>
+              <p className="text-sm text-red-600">{t('pages.messaging.previewNoContent')}</p>
             ) : (
               previewTemplate.contents.map((content) => (
                 <div key={content.id} className="p-3 bg-gray-50 rounded-lg">
@@ -323,13 +333,13 @@ export const MessagingPage: React.FC = () => {
             {previewTemplate.contents.some((c) => c.contentValue.includes('{{')) && (
               <div className="p-3 bg-blue-50 rounded-lg">
                 <p className="text-xs font-medium text-blue-700">
-                  Variables detected: {
-                    [...new Set(
+                  {t('pages.messaging.previewVariables', {
+                    variables: [...new Set(
                       previewTemplate.contents
                         .flatMap((c) => [...c.contentValue.matchAll(/\{\{(.*?)\}\}/g)])
                         .map((m) => `{{${m[1]}}}`)
-                    )].join(', ')
-                  }
+                    )].join(', '),
+                  })}
                 </p>
               </div>
             )}

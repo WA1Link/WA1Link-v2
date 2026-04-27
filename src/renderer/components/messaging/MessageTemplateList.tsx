@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { MessageTemplate } from '../../../shared/types';
 import { Button } from '../ui/Button';
 
@@ -17,6 +18,7 @@ export const MessageTemplateList: React.FC<MessageTemplateListProps> = ({
   onDelete,
   onCheck,
 }) => {
+  const { t } = useTranslation();
   if (templates.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -33,8 +35,8 @@ export const MessageTemplateList: React.FC<MessageTemplateListProps> = ({
             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
           />
         </svg>
-        <p className="mt-2">No message templates yet</p>
-        <p className="text-sm">Create a template to get started</p>
+        <p className="mt-2">{t('messageTemplates.noTemplates')}</p>
+        <p className="text-sm">{t('messageTemplates.noTemplatesHint')}</p>
       </div>
     );
   }
@@ -64,7 +66,7 @@ export const MessageTemplateList: React.FC<MessageTemplateListProps> = ({
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-gray-900 truncate">
-                  {template.name || 'Untitled Template'}
+                  {template.name || t('messageTemplates.untitled')}
                 </h3>
                 <div className="mt-2 space-y-1">
                   {template.contents.slice(0, 2).map((content) => (
@@ -88,7 +90,7 @@ export const MessageTemplateList: React.FC<MessageTemplateListProps> = ({
                   ))}
                   {template.contents.length > 2 && (
                     <p className="text-xs text-gray-400">
-                      +{template.contents.length - 2} more items
+                      {t('messageTemplates.moreItems', { count: template.contents.length - 2 })}
                     </p>
                   )}
                 </div>
@@ -101,7 +103,7 @@ export const MessageTemplateList: React.FC<MessageTemplateListProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onCheck(template)}
-                    title="Preview template"
+                    title={t('messageTemplates.preview')}
                   >
                     <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -113,7 +115,7 @@ export const MessageTemplateList: React.FC<MessageTemplateListProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => onEdit(template)}
-                  title="Edit template"
+                  title={t('messageTemplates.edit')}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
@@ -129,7 +131,7 @@ export const MessageTemplateList: React.FC<MessageTemplateListProps> = ({
                   size="sm"
                   onClick={() => onDelete(template.id)}
                   className="text-red-600 hover:bg-red-50"
-                  title="Delete template"
+                  title={t('messageTemplates.delete')}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path

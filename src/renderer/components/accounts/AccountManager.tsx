@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAccountStore } from '../../stores/useAccountStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { useLicenseStore } from '../../stores/useLicenseStore';
@@ -9,6 +10,7 @@ import { Button } from '../ui/Button';
 import { Account } from '../../../shared/types';
 
 export const AccountManager: React.FC = () => {
+  const { t } = useTranslation();
   const {
     accounts,
     connectionStatus,
@@ -51,13 +53,13 @@ export const AccountManager: React.FC = () => {
         setIsConnecting(false);
         clearQRCode(connection.accountId);
         clearPairingCode(connection.accountId);
-        addToast({ type: 'success', message: 'Connected to WhatsApp' });
+        addToast({ type: 'success', message: t('accounts.connectedToast') });
       } else if (connection.status === 'logged_out') {
         setConnectingAccountId(null);
         setIsConnecting(false);
         clearQRCode(connection.accountId);
         clearPairingCode(connection.accountId);
-        addToast({ type: 'error', message: 'Session expired. Please connect again.' });
+        addToast({ type: 'error', message: t('accounts.loggedOutToast') });
       } else if (connection.status === 'disconnected' && connectingAccountIdRef.current === connection.accountId) {
         setIsConnecting(false);
       }
@@ -87,7 +89,7 @@ export const AccountManager: React.FC = () => {
     try {
       await createAccount(data);
       setShowAddForm(false);
-      addToast({ type: 'success', message: 'Account added successfully' });
+      addToast({ type: 'success', message: t('accounts.added') });
     } catch (error) {
       addToast({ type: 'error', message: (error as Error).message });
     }
@@ -126,17 +128,17 @@ export const AccountManager: React.FC = () => {
   const handleDisconnect = async (accountId: string) => {
     try {
       await disconnect(accountId);
-      addToast({ type: 'info', message: 'Disconnected from WhatsApp' });
+      addToast({ type: 'info', message: t('accounts.disconnectedToast') });
     } catch (error) {
       addToast({ type: 'error', message: (error as Error).message });
     }
   };
 
   const handleDelete = async (accountId: string) => {
-    if (confirm('Are you sure you want to delete this account?')) {
+    if (confirm(t('accounts.deleteConfirm'))) {
       try {
         await deleteAccount(accountId);
-        addToast({ type: 'success', message: 'Account deleted' });
+        addToast({ type: 'success', message: t('accounts.deleted') });
       } catch (error) {
         addToast({ type: 'error', message: (error as Error).message });
       }
@@ -156,8 +158,8 @@ export const AccountManager: React.FC = () => {
     <div className="card">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">WhatsApp Accounts</h2>
-          <p className="text-sm text-gray-500">Manage your connected WhatsApp accounts</p>
+          <h2 className="text-lg font-semibold text-gray-900">{t('accounts.managerTitle')}</h2>
+          <p className="text-sm text-gray-500">{t('accounts.managerDescription')}</p>
         </div>
         <Button
           onClick={() => setShowAddForm(true)}
@@ -173,7 +175,7 @@ export const AccountManager: React.FC = () => {
             </svg>
           }
         >
-          Add Account
+          {t('accounts.addAccount')}
         </Button>
       </div>
 

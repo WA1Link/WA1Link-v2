@@ -1,8 +1,11 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../../stores/useUIStore';
 import { useAccountStore } from '../../stores/useAccountStore';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 export const Header: React.FC = () => {
+  const { t } = useTranslation();
   const isSidebarOpen = useUIStore((state) => state.isSidebarOpen);
   const toggleSidebar = useUIStore((state) => state.toggleSidebar);
   const activeAccountId = useAccountStore((state) => state.activeAccountId);
@@ -27,15 +30,15 @@ export const Header: React.FC = () => {
   const getStatusText = () => {
     switch (status) {
       case 'connected':
-        return 'Connected';
+        return t('header.status.connected');
       case 'connecting':
-        return 'Connecting...';
+        return t('header.status.connecting');
       case 'qr_ready':
-        return 'Scan QR Code';
+        return t('header.status.qrReady');
       case 'logged_out':
-        return 'Logged Out';
+        return t('header.status.loggedOut');
       default:
-        return 'Disconnected';
+        return t('header.status.disconnected');
     }
   };
 
@@ -65,8 +68,10 @@ export const Header: React.FC = () => {
           </button>
         </div>
 
-        {/* Right: Account Status */}
+        {/* Right: Language switcher + Account Status */}
         <div className="flex items-center gap-4">
+          <LanguageSwitcher />
+
           {activeAccount && (
             <div className="flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-lg">
               <div className={`w-2.5 h-2.5 rounded-full ${getStatusColor()}`} />
@@ -87,7 +92,7 @@ export const Header: React.FC = () => {
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                 />
               </svg>
-              <span>No account connected</span>
+              <span>{t('header.noAccount')}</span>
             </div>
           )}
         </div>

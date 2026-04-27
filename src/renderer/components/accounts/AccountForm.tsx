@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Dropdown } from '../ui/Dropdown';
@@ -18,6 +19,7 @@ export const AccountForm: React.FC<AccountFormProps> = ({
   onSubmit,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [countryCode, setCountryCode] = useState('994');
   const [errors, setErrors] = useState<{ name?: string }>({});
@@ -33,7 +35,7 @@ export const AccountForm: React.FC<AccountFormProps> = ({
     // Validate
     const newErrors: { name?: string } = {};
     if (!name.trim()) {
-      newErrors.name = 'Account name is required';
+      newErrors.name = t('accounts.accountName');
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -55,12 +57,12 @@ export const AccountForm: React.FC<AccountFormProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Add Account" size="sm">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('accounts.addAccount')} size="sm">
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <Input
-            label="Account Name"
-            placeholder="Enter account name"
+            label={t('accounts.accountName')}
+            placeholder={t('accounts.accountNamePlaceholder')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             error={errors.name}
@@ -68,23 +70,23 @@ export const AccountForm: React.FC<AccountFormProps> = ({
           />
 
           <Dropdown
-            label="Default Country"
+            label={t('accounts.defaultCountry')}
             options={countryOptions}
             value={countryCode}
             onChange={setCountryCode}
           />
 
           <p className="text-xs text-gray-500">
-            The country code will be used for normalizing phone numbers when sending messages.
+            {t('accounts.defaultCountryHint')}
           </p>
         </div>
 
         <ModalFooter>
           <Button type="button" variant="secondary" onClick={handleClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" isLoading={isLoading}>
-            Add Account
+            {t('accounts.addAccount')}
           </Button>
         </ModalFooter>
       </form>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { SendingProgress as SendingProgressType } from '../../../shared/types';
 import { ProgressBar, CircularProgress } from '../ui/ProgressBar';
 import { Button } from '../ui/Button';
@@ -14,6 +15,7 @@ export const SendingProgressComponent: React.FC<SendingProgressProps> = ({
   isSending,
   onStop,
 }) => {
+  const { t } = useTranslation();
   if (!isSending && !progress) {
     return null;
   }
@@ -27,11 +29,11 @@ export const SendingProgressComponent: React.FC<SendingProgressProps> = ({
     <div className="card">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-gray-900">
-          {isSending ? 'Sending Messages...' : 'Sending Complete'}
+          {isSending ? t('sending.inProgress') : t('sending.complete')}
         </h3>
         {isSending && (
           <Button variant="danger" size="sm" onClick={onStop}>
-            Stop Sending
+            {t('sending.stopSending')}
           </Button>
         )}
       </div>
@@ -53,22 +55,22 @@ export const SendingProgressComponent: React.FC<SendingProgressProps> = ({
           <ProgressBar
             value={completed}
             max={total}
-            label="Progress"
+            label={t('sending.progress')}
             color={isSending ? 'primary' : 'success'}
           />
 
           <div className="grid grid-cols-3 gap-4 text-center">
             <div className="p-3 bg-gray-50 rounded-lg">
               <p className="text-2xl font-bold text-gray-900">{total}</p>
-              <p className="text-xs text-gray-500">Total</p>
+              <p className="text-xs text-gray-500">{t('sending.total')}</p>
             </div>
             <div className="p-3 bg-green-50 rounded-lg">
               <p className="text-2xl font-bold text-green-600">{sent}</p>
-              <p className="text-xs text-gray-500">Sent</p>
+              <p className="text-xs text-gray-500">{t('sending.sent')}</p>
             </div>
             <div className="p-3 bg-red-50 rounded-lg">
               <p className="text-2xl font-bold text-red-600">{failed}</p>
-              <p className="text-xs text-gray-500">Failed</p>
+              <p className="text-xs text-gray-500">{t('sending.failed')}</p>
             </div>
           </div>
 
@@ -77,18 +79,18 @@ export const SendingProgressComponent: React.FC<SendingProgressProps> = ({
             <div className="grid grid-cols-2 gap-4 text-center mt-3">
               <div className="p-2 bg-indigo-50 rounded-lg">
                 <p className="text-lg font-bold text-indigo-600">{progress.crmStats.newContacts}</p>
-                <p className="text-xs text-gray-500">New CRM Contacts</p>
+                <p className="text-xs text-gray-500">{t('sending.newCrmContacts')}</p>
               </div>
               <div className="p-2 bg-gray-50 rounded-lg">
                 <p className="text-lg font-bold text-gray-500">{progress.crmStats.skippedContacts}</p>
-                <p className="text-xs text-gray-500">Already in CRM</p>
+                <p className="text-xs text-gray-500">{t('sending.alreadyInCrm')}</p>
               </div>
             </div>
           )}
 
           {progress?.currentTarget && isSending && (
             <p className="text-sm text-gray-500">
-              Current: {progress.currentTarget}
+              {t('sending.currentTarget', { target: progress.currentTarget })}
             </p>
           )}
         </div>
@@ -98,7 +100,7 @@ export const SendingProgressComponent: React.FC<SendingProgressProps> = ({
       {progress?.errors && progress.errors.length > 0 && (
         <div className="mt-4 pt-4 border-t">
           <h4 className="text-sm font-medium text-gray-700 mb-2">
-            Failed Messages ({progress.errors.length})
+            {t('sending.failedMessages', { count: progress.errors.length })}
           </h4>
           <div className="max-h-32 overflow-y-auto space-y-1">
             {progress.errors.map((error, i) => (

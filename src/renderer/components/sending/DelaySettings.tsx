@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { DelayConfig, DEFAULT_DELAY_CONFIG } from '../../../shared/types';
 import { Input } from '../ui/Input';
 import { Modal, ModalFooter } from '../ui/Modal';
@@ -17,6 +18,8 @@ export const DelaySettings: React.FC<DelaySettingsProps> = ({
   config,
   onChange,
 }) => {
+  const { t } = useTranslation();
+
   const handleChange = (key: keyof DelayConfig, value: string) => {
     const numValue = parseInt(value, 10);
     if (!isNaN(numValue) && numValue >= 0) {
@@ -29,53 +32,53 @@ export const DelaySettings: React.FC<DelaySettingsProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Delay Settings" size="md">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('delays.title')} size="md">
       <div className="space-y-6">
         {/* Per-message delay */}
         <div>
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Message Delay (ms)</h4>
+          <h4 className="text-sm font-medium text-gray-900 mb-3">{t('delays.messageDelay')}</h4>
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Minimum"
+              label={t('delays.minimum')}
               type="number"
               min={0}
               value={config.perMessageMin}
               onChange={(e) => handleChange('perMessageMin', e.target.value)}
-              helperText="Min delay between messages"
+              helperText={t('delays.minMessageHint')}
             />
             <Input
-              label="Maximum"
+              label={t('delays.maximum')}
               type="number"
               min={0}
               value={config.perMessageMax}
               onChange={(e) => handleChange('perMessageMax', e.target.value)}
-              helperText="Max delay between messages"
+              helperText={t('delays.maxMessageHint')}
             />
           </div>
         </div>
 
         {/* Batch settings */}
         <div>
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Batch Settings</h4>
+          <h4 className="text-sm font-medium text-gray-900 mb-3">{t('delays.batchSettings')}</h4>
           <div className="space-y-4">
             <Input
-              label="Batch Size"
+              label={t('delays.batchSize')}
               type="number"
               min={1}
               value={config.batchSize}
               onChange={(e) => handleChange('batchSize', e.target.value)}
-              helperText="Number of messages before taking a break"
+              helperText={t('delays.batchSizeHint')}
             />
             <div className="grid grid-cols-2 gap-4">
               <Input
-                label="Batch Delay Min (ms)"
+                label={t('delays.batchDelayMin')}
                 type="number"
                 min={0}
                 value={config.batchDelayMin}
                 onChange={(e) => handleChange('batchDelayMin', e.target.value)}
               />
               <Input
-                label="Batch Delay Max (ms)"
+                label={t('delays.batchDelayMax')}
                 type="number"
                 min={0}
                 value={config.batchDelayMax}
@@ -87,15 +90,20 @@ export const DelaySettings: React.FC<DelaySettingsProps> = ({
 
         {/* Preview */}
         <div className="p-4 bg-gray-50 rounded-lg">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Preview</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">{t('delays.preview')}</h4>
           <ul className="text-sm text-gray-600 space-y-1">
             <li>
-              Wait {config.perMessageMin / 1000}s - {config.perMessageMax / 1000}s between
-              messages
+              {t('delays.previewWait', {
+                min: config.perMessageMin / 1000,
+                max: config.perMessageMax / 1000,
+              })}
             </li>
-            <li>After every {config.batchSize} messages:</li>
+            <li>{t('delays.previewBatch', { count: config.batchSize })}</li>
             <li className="ml-4">
-              Take a {config.batchDelayMin / 1000}s - {config.batchDelayMax / 1000}s break
+              {t('delays.previewBatchBreak', {
+                min: config.batchDelayMin / 1000,
+                max: config.batchDelayMax / 1000,
+              })}
             </li>
           </ul>
         </div>
@@ -103,9 +111,9 @@ export const DelaySettings: React.FC<DelaySettingsProps> = ({
 
       <ModalFooter>
         <Button variant="ghost" onClick={handleReset}>
-          Reset to Defaults
+          {t('delays.resetDefaults')}
         </Button>
-        <Button onClick={onClose}>Done</Button>
+        <Button onClick={onClose}>{t('delays.done')}</Button>
       </ModalFooter>
     </Modal>
   );

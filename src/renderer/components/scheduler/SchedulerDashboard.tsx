@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useScheduleStore } from '../../stores/useScheduleStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { ScheduledJobList } from './ScheduledJobList';
@@ -6,6 +7,7 @@ import { MessageHistoryList } from './MessageHistoryList';
 import { Button } from '../ui/Button';
 
 export const SchedulerDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const { jobs, isLoading, fetchJobs, cancelJob, deleteJob, updateJobProgress } = useScheduleStore();
   const { addToast } = useUIStore();
 
@@ -52,7 +54,7 @@ export const SchedulerDashboard: React.FC = () => {
       {runningJobs.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Running ({runningJobs.length})
+            {t('schedulerUi.running', { count: runningJobs.length })}
           </h2>
           <ScheduledJobList jobs={runningJobs} onCancel={handleCancel} onDelete={handleDelete} />
         </div>
@@ -62,7 +64,7 @@ export const SchedulerDashboard: React.FC = () => {
       {pendingJobs.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Upcoming ({pendingJobs.length})
+            {t('schedulerUi.upcoming', { count: pendingJobs.length })}
           </h2>
           <ScheduledJobList jobs={pendingJobs} onCancel={handleCancel} onDelete={handleDelete} />
         </div>
@@ -72,7 +74,7 @@ export const SchedulerDashboard: React.FC = () => {
       {completedJobs.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            History ({completedJobs.length})
+            {t('schedulerUi.history', { count: completedJobs.length })}
           </h2>
           <ScheduledJobList jobs={completedJobs} onCancel={handleCancel} onDelete={handleDelete} />
         </div>
@@ -80,7 +82,7 @@ export const SchedulerDashboard: React.FC = () => {
 
       {/* Sent Messages History (per-recipient) */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Sent Messages History</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('schedulerUi.messageHistoryTitle')}</h2>
         <MessageHistoryList jobs={jobs} />
       </div>
 
@@ -100,10 +102,8 @@ export const SchedulerDashboard: React.FC = () => {
               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No scheduled jobs</h3>
-          <p className="mt-2 text-gray-500">
-            Go to Messaging and use the Schedule option to create a scheduled campaign.
-          </p>
+          <h3 className="mt-4 text-lg font-medium text-gray-900">{t('schedulerUi.noJobs')}</h3>
+          <p className="mt-2 text-gray-500">{t('schedulerUi.noJobsHint')}</p>
         </div>
       )}
 

@@ -1,0 +1,422 @@
+{
+  "common": {
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Изменить",
+    "close": "Закрыть",
+    "loading": "Загрузка...",
+    "send": "Отправить",
+    "stop": "Остановить",
+    "yes": "Да",
+    "no": "Нет",
+    "confirm": "Подтвердить",
+    "search": "Поиск",
+    "refresh": "Обновить",
+    "selectAll": "Выбрать все",
+    "clear": "Очистить",
+    "all": "Все",
+    "name": "Имя",
+    "phone": "Телефон",
+    "status": "Статус",
+    "actions": "Действия",
+    "previous": "Назад",
+    "next": "Вперёд",
+    "show": "Показать",
+    "hide": "Скрыть",
+    "copy": "Копировать",
+    "copied": "Скопировано!",
+    "createdAt": "Создано",
+    "expand": "Развернуть",
+    "collapse": "Свернуть"
+  },
+  "nav": {
+    "messaging": "Сообщения",
+    "contacts": "Контакты",
+    "scheduler": "Планировщик",
+    "crm": "CRM",
+    "settings": "Настройки"
+  },
+  "header": {
+    "noAccount": "Аккаунт не подключён",
+    "status": {
+      "connected": "Подключено",
+      "connecting": "Подключение...",
+      "qrReady": "Отсканируйте QR-код",
+      "loggedOut": "Выход выполнен",
+      "disconnected": "Отключено"
+    }
+  },
+  "language": {
+    "switcher": "Язык",
+    "english": "Английский",
+    "russian": "Русский",
+    "azerbaijani": "Азербайджанский"
+  },
+  "pages": {
+    "messaging": {
+      "title": "Сообщения",
+      "templates": "Шаблоны сообщений",
+      "templatesSelected": "Выбрано {{selected}} из {{total}}",
+      "newTemplate": "Новый шаблон",
+      "targets": "Получатели",
+      "scheduleForLater": "Запланировать на потом",
+      "scheduleForLaterDescription": "Хотите отправить в определённое время? Запланируйте кампанию, и она запустится автоматически.",
+      "scheduleCampaign": "Запланировать кампанию",
+      "campaignScheduled": "Кампания запланирована",
+      "templateCreated": "Шаблон создан",
+      "templateUpdated": "Шаблон обновлён",
+      "templateDeleted": "Шаблон удалён",
+      "deleteTemplateConfirm": "Вы уверены, что хотите удалить этот шаблон?",
+      "selectAccountFirst": "Сначала подключите аккаунт",
+      "selectTemplateFirst": "Выберите хотя бы один шаблон",
+      "uploadTargetsFirst": "Загрузите контакты получателей",
+      "sendingComplete": "Отправка завершена: {{sent}} отправлено, {{failed}} с ошибкой",
+      "sendingCompleteWithCrm": "Отправка завершена: {{sent}} отправлено, {{failed}} с ошибкой | CRM: {{newContacts}} новых, {{skippedContacts}} существующих",
+      "sendingStopped": "Отправка остановлена",
+      "previewTitle": "Предпросмотр: {{name}}",
+      "previewNoContent": "В этом шаблоне нет содержимого.",
+      "previewVariables": "Найденные переменные: {{variables}}"
+    },
+    "contacts": {
+      "title": "Извлечение контактов",
+      "description": "Извлечь контакты из групп WhatsApp и личных чатов"
+    },
+    "scheduler": {
+      "title": "Запланированные кампании",
+      "description": "Просмотр и управление вашими запланированными рассылками"
+    },
+    "settings": {
+      "title": "Настройки",
+      "license": {
+        "title": "Информация о лицензии",
+        "status": "Статус лицензии",
+        "active": "Активна",
+        "inactive": "Неактивна",
+        "valid": "Действительна",
+        "invalid": "Недействительна",
+        "maxAccounts": "Макс. аккаунтов",
+        "expires": "Истекает",
+        "deviceFingerprint": "Отпечаток устройства",
+        "loading": "Загрузка...",
+        "change": "Сменить лицензию",
+        "changeWarning": "Текущая лицензия будет удалена, и потребуется ввести новую. Все ваши данные (клиенты, продукты, платежи) сохранятся.",
+        "confirmRemove": "Да, удалить"
+      },
+      "about": {
+        "title": "О программе",
+        "appName": "WA1Link",
+        "version": "Версия {{version}}",
+        "tagline": "WA1Link — мощный инструмент массовой рассылки в WhatsApp со встроенной CRM, планировщиком и историей по получателям.",
+        "stack": "Создано на Electron, React и Baileys"
+      }
+    },
+    "crm": {
+      "title": "CRM",
+      "tabs": {
+        "dashboard": "Панель",
+        "customers": "Клиенты",
+        "products": "Продукты",
+        "payments": "Платежи"
+      },
+      "stats": {
+        "totalCustomers": "Всего клиентов",
+        "totalProducts": "Всего продуктов",
+        "totalPayments": "Всего платежей",
+        "totalRevenue": "Общий доход"
+      }
+    }
+  },
+  "accounts": {
+    "managerTitle": "Аккаунты WhatsApp",
+    "managerDescription": "Управляйте подключёнными аккаунтами WhatsApp",
+    "addAccount": "Добавить аккаунт",
+    "accountName": "Название аккаунта",
+    "accountNamePlaceholder": "Введите название аккаунта",
+    "defaultCountry": "Страна по умолчанию",
+    "defaultCountryHint": "Код страны будет использоваться для нормализации номеров при отправке сообщений.",
+    "noAccountsYet": "Аккаунты ещё не добавлены",
+    "noAccountsHint": "Добавьте аккаунт, чтобы начать",
+    "phoneNotVerified": "Телефон не подтверждён",
+    "connect": "Подключить",
+    "disconnect": "Отключить",
+    "deleteConfirm": "Вы уверены, что хотите удалить этот аккаунт?",
+    "added": "Аккаунт успешно добавлен",
+    "deleted": "Аккаунт удалён",
+    "connectedToast": "Подключено к WhatsApp",
+    "loggedOutToast": "Сессия истекла. Подключитесь заново.",
+    "disconnectedToast": "Отключено от WhatsApp",
+    "status": {
+      "connected": "Подключено",
+      "connecting": "Подключение",
+      "qrReady": "QR готов",
+      "loggedOut": "Выход выполнен",
+      "disconnected": "Отключено"
+    },
+    "qr": {
+      "connectTitle": "Подключить {{name}}",
+      "method": "Способ подключения",
+      "qrCode": "QR-код",
+      "qrCodeHint": "Сканировать телефоном",
+      "pairingCode": "Код сопряжения",
+      "pairingCodeHint": "Ввести номер телефона",
+      "country": "Страна",
+      "phoneNumber": "Номер телефона",
+      "phoneNumberPlaceholder": "Введите номер телефона",
+      "phoneNumberHint": "Введите номер, зарегистрированный в WhatsApp",
+      "showQr": "Показать QR-код",
+      "getPairingCode": "Получить код сопряжения",
+      "scanInstruction": "Отсканируйте этот QR-код в WhatsApp",
+      "qrSteps": {
+        "1": "1. Откройте WhatsApp на телефоне",
+        "2": "2. Нажмите Меню или Настройки и выберите Связанные устройства",
+        "3": "3. Нажмите Привязать устройство",
+        "4": "4. Наведите камеру телефона на этот экран"
+      },
+      "pairingSteps": {
+        "1": "1. Откройте WhatsApp на телефоне",
+        "2": "2. Нажмите Меню или Настройки и выберите Связанные устройства",
+        "3": "3. Нажмите Привязать устройство",
+        "4": "4. Нажмите «Привязать через номер телефона»",
+        "5": "5. Введите номер телефона и код выше"
+      },
+      "enterCodeInstruction": "Введите этот код в WhatsApp",
+      "waitingForQr": "Ожидание QR-кода...",
+      "requestingCode": "Запрос кода сопряжения..."
+    }
+  },
+  "messageTemplates": {
+    "noTemplates": "Шаблонов сообщений пока нет",
+    "noTemplatesHint": "Создайте шаблон, чтобы начать",
+    "untitled": "Без названия",
+    "moreItems": "+ ещё {{count}}",
+    "preview": "Предпросмотр",
+    "edit": "Изменить шаблон",
+    "delete": "Удалить шаблон",
+    "composer": {
+      "createTitle": "Создать шаблон сообщения",
+      "editTitle": "Изменить шаблон сообщения",
+      "templateName": "Название шаблона",
+      "templateNamePlaceholder": "Введите название шаблона (необязательно)",
+      "insertVariable": "Вставить переменную",
+      "messageContent": "Содержимое сообщения",
+      "messageContentPlaceholder": "Введите текст сообщения...",
+      "imageLabel": "Изображение: {{filename}}",
+      "chooseImage": "Выбрать изображение",
+      "addText": "+ Добавить текст",
+      "addImage": "+ Добавить изображение",
+      "saveChanges": "Сохранить",
+      "create": "Создать шаблон"
+    }
+  },
+  "targets": {
+    "uploaderDragDrop": "Перетащите файл Excel сюда",
+    "uploaderOr": "или",
+    "uploaderBrowse": "Выбрать файл",
+    "uploaderHint": "Файл Excel должен содержать колонки: Number (обязательно), Name (необязательно) и любые произвольные поля",
+    "listTitle": "Список получателей",
+    "loadedCount": "Загружено контактов: {{count}}",
+    "clearAll": "Очистить все",
+    "empty": "Получатели не загружены"
+  },
+  "campaign": {
+    "launchTitle": "Запуск кампании",
+    "templatesCount": "Шаблоны",
+    "recipientsCount": "Получатели",
+    "estimatedDuration": "Оценка времени",
+    "needAccount": "Сначала подключите аккаунт WhatsApp",
+    "needTemplate": "Выберите хотя бы один шаблон сообщения",
+    "needTargets": "Загрузите Excel с номерами получателей",
+    "startSending": "Начать отправку"
+  },
+  "sending": {
+    "inProgress": "Отправка сообщений...",
+    "complete": "Отправка завершена",
+    "stopSending": "Остановить отправку",
+    "progress": "Прогресс",
+    "total": "Всего",
+    "sent": "Отправлено",
+    "failed": "Ошибки",
+    "newCrmContacts": "Новые CRM-контакты",
+    "alreadyInCrm": "Уже в CRM",
+    "currentTarget": "Текущий: {{target}}",
+    "failedMessages": "Сообщения с ошибкой ({{count}})"
+  },
+  "delays": {
+    "title": "Настройки задержек",
+    "messageDelay": "Задержка между сообщениями (мс)",
+    "minimum": "Минимум",
+    "maximum": "Максимум",
+    "minMessageHint": "Мин. задержка между сообщениями",
+    "maxMessageHint": "Макс. задержка между сообщениями",
+    "batchSettings": "Настройки пакетов",
+    "batchSize": "Размер пакета",
+    "batchSizeHint": "Сколько сообщений до перерыва",
+    "batchDelayMin": "Мин. задержка пакета (мс)",
+    "batchDelayMax": "Макс. задержка пакета (мс)",
+    "preview": "Предпросмотр",
+    "previewWait": "Ждать {{min}}с – {{max}}с между сообщениями",
+    "previewBatch": "После каждых {{count}} сообщений:",
+    "previewBatchBreak": "Делать паузу {{min}}с – {{max}}с",
+    "resetDefaults": "Сбросить",
+    "done": "Готово"
+  },
+  "schedulerUi": {
+    "running": "Выполняются ({{count}})",
+    "upcoming": "Предстоящие ({{count}})",
+    "history": "История ({{count}})",
+    "messageHistoryTitle": "История отправленных сообщений",
+    "noJobs": "Нет запланированных задач",
+    "noJobsHint": "Перейдите в раздел Сообщения и используйте опцию «Запланировать», чтобы создать кампанию.",
+    "form": {
+      "title": "Запланировать кампанию",
+      "campaignName": "Название кампании",
+      "campaignNamePlaceholder": "Введите название этой кампании",
+      "date": "Дата",
+      "time": "Время",
+      "summary": "Сводка кампании",
+      "summaryTemplates": "Шаблонов: {{count}}",
+      "summaryRecipients": "Получателей: {{count}}",
+      "summaryDelay": "Задержка: {{min}}с – {{max}}с на сообщение",
+      "schedule": "Запланировать"
+    },
+    "job": {
+      "statusPending": "Ожидает",
+      "statusRunning": "Выполняется",
+      "statusCompleted": "Завершено",
+      "statusFailed": "Ошибка",
+      "statusCancelled": "Отменено",
+      "scheduledFor": "Запланировано на {{date}}",
+      "sentFailed": "Отправлено: {{sent}}, ошибок: {{failed}}",
+      "totalCount": "всего: {{count}}",
+      "templates": "Шаблоны:",
+      "recipients": "Получатели:"
+    },
+    "history": {
+      "campaign": "Кампания",
+      "searchPlaceholder": "Поиск по номеру/имени",
+      "entries": "Записей: {{count}}",
+      "exportCsv": "Экспорт в CSV",
+      "loading": "Загрузка…",
+      "empty": "Отправленных сообщений ещё нет. Запустите кампанию, чтобы заполнить историю.",
+      "template": "Шаблон",
+      "sentAt": "Отправлено",
+      "error": "Ошибка",
+      "page": "Страница {{page}} из {{total}}"
+    }
+  },
+  "contactsExtractor": {
+    "groupsTab": "Группы",
+    "personalTab": "Личные",
+    "needAccount": "Сначала подключите аккаунт WhatsApp",
+    "exportToExcel": "Экспорт в Excel",
+    "groupsSelected": "Выбрано групп: {{count}}",
+    "chatsSelected": "Выбрано чатов: {{count}}",
+    "groups": {
+      "title": "Группы WhatsApp",
+      "selectedSummary": "Выбрано {{groups}} групп ({{participants}} участников)",
+      "empty": "Группы не найдены",
+      "emptyHint": "Подключите аккаунт WhatsApp и обновите"
+    },
+    "personal": {
+      "title": "Личные контакты",
+      "selectedSummary": "Выбрано {{selected}} из {{total}}",
+      "searchPlaceholder": "Поиск по имени или номеру...",
+      "empty": "Личных чатов не найдено",
+      "emptyHint": "История чатов синхронизируется после подключения.",
+      "emptyHint2": "Нажмите Обновить, чтобы проверить новые чаты.",
+      "noMatch": "Контакты не соответствуют поиску",
+      "noMatchHint": "Попробуйте другое имя или номер.",
+      "showing": "Показано {{shown}} из {{total}} контактов"
+    }
+  },
+  "agreement": {
+    "title": "Соглашение об использовании ПО",
+    "description": "Прочтите и примите соглашение, чтобы продолжить"
+  },
+  "license": {
+    "verifying": "Проверка лицензии...",
+    "form": {
+      "title": "Введите ключ лицензии",
+      "placeholder": "Вставьте ключ лицензии сюда...",
+      "deviceFingerprint": "Отпечаток устройства",
+      "activate": "Активировать лицензию",
+      "noLicense": "Нет лицензии?",
+      "purchase": "Купить лицензию"
+    }
+  },
+  "update": {
+    "available": "Доступно обновление",
+    "downloading": "Найдена новая версия v{{version}}. Загрузка...",
+    "downloadingShort": "Загрузка",
+    "downloaded": "Версия v{{version}} загружена. Перезапустите приложение для установки.",
+    "restart": "Перезапустить",
+    "later": "Позже"
+  },
+  "crm": {
+    "dashboard": {
+      "title": "Панель",
+      "totalCustomers": "Всего клиентов",
+      "totalProducts": "Всего продуктов",
+      "totalPayments": "Всего платежей",
+      "totalRevenue": "Общий доход"
+    },
+    "customers": {
+      "title": "Клиенты",
+      "addCustomer": "Добавить клиента",
+      "search": "Поиск клиентов...",
+      "name": "Имя",
+      "phone": "Телефон",
+      "email": "Email",
+      "company": "Компания",
+      "notes": "Заметки",
+      "createdAt": "Создан",
+      "noCustomers": "Клиентов пока нет",
+      "deleteConfirm": "Удалить этого клиента?",
+      "form": {
+        "createTitle": "Добавить клиента",
+        "editTitle": "Изменить клиента",
+        "namePlaceholder": "Имя клиента",
+        "phonePlaceholder": "Номер телефона",
+        "emailPlaceholder": "Email",
+        "companyPlaceholder": "Компания",
+        "notesPlaceholder": "Заметки"
+      }
+    },
+    "products": {
+      "title": "Продукты",
+      "addProduct": "Добавить продукт",
+      "search": "Поиск продуктов...",
+      "name": "Название",
+      "price": "Цена",
+      "description": "Описание",
+      "noProducts": "Продуктов пока нет",
+      "deleteConfirm": "Удалить этот продукт?",
+      "form": {
+        "createTitle": "Добавить продукт",
+        "editTitle": "Изменить продукт",
+        "namePlaceholder": "Название продукта",
+        "pricePlaceholder": "Цена",
+        "descriptionPlaceholder": "Описание"
+      }
+    },
+    "payments": {
+      "title": "Платежи",
+      "addPayment": "Добавить платёж",
+      "search": "Поиск платежей...",
+      "customer": "Клиент",
+      "amount": "Сумма",
+      "date": "Дата",
+      "method": "Способ",
+      "noPayments": "Платежей пока нет",
+      "deleteConfirm": "Удалить этот платёж?",
+      "form": {
+        "createTitle": "Добавить платёж",
+        "editTitle": "Изменить платёж",
+        "amountPlaceholder": "Сумма",
+        "methodPlaceholder": "Способ",
+        "notesPlaceholder": "Заметки"
+      }
+    }
+  }
+}

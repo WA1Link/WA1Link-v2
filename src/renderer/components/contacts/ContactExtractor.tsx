@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useContactStore } from '../../stores/useContactStore';
 import { useAccountStore } from '../../stores/useAccountStore';
 import { useUIStore } from '../../stores/useUIStore';
@@ -9,6 +10,7 @@ import { Button } from '../ui/Button';
 type TabType = 'groups' | 'chats';
 
 export const ContactExtractor: React.FC = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('groups');
 
   const {
@@ -36,7 +38,7 @@ export const ContactExtractor: React.FC = () => {
 
   const handleFetchGroups = async () => {
     if (!activeAccountId) {
-      addToast({ type: 'error', message: 'Please connect a WhatsApp account first' });
+      addToast({ type: 'error', message: t('contactsExtractor.needAccount') });
       return;
     }
     await fetchGroups(activeAccountId);
@@ -44,7 +46,7 @@ export const ContactExtractor: React.FC = () => {
 
   const handleFetchChats = async () => {
     if (!activeAccountId) {
-      addToast({ type: 'error', message: 'Please connect a WhatsApp account first' });
+      addToast({ type: 'error', message: t('contactsExtractor.needAccount') });
       return;
     }
     await fetchPersonalChats(activeAccountId);
@@ -52,7 +54,7 @@ export const ContactExtractor: React.FC = () => {
 
   const handleExport = async () => {
     if (!activeAccountId) {
-      addToast({ type: 'error', message: 'Please connect a WhatsApp account first' });
+      addToast({ type: 'error', message: t('contactsExtractor.needAccount') });
       return;
     }
 
@@ -80,8 +82,8 @@ export const ContactExtractor: React.FC = () => {
   };
 
   const tabs = [
-    { id: 'groups' as const, label: 'Groups', count: groups.length },
-    { id: 'chats' as const, label: 'Personal', count: personalChats.length },
+    { id: 'groups' as const, label: t('contactsExtractor.groupsTab'), count: groups.length },
+    { id: 'chats' as const, label: t('contactsExtractor.personalTab'), count: personalChats.length },
   ];
 
   const hasSelection =
@@ -151,12 +153,12 @@ export const ContactExtractor: React.FC = () => {
             </svg>
           }
         >
-          Export to Excel
+          {t('contactsExtractor.exportToExcel')}
         </Button>
         <span className="text-sm text-gray-500">
           {activeTab === 'groups'
-            ? `${selectedGroupIds.size} group(s) selected`
-            : `${selectedChatJids.size} chat(s) selected`}
+            ? t('contactsExtractor.groupsSelected', { count: selectedGroupIds.size })
+            : t('contactsExtractor.chatsSelected', { count: selectedChatJids.size })}
         </span>
       </div>
     </div>

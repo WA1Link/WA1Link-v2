@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Table } from '../ui/Table';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -38,6 +39,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
   onDelete,
   onExport,
 }) => {
+  const { t } = useTranslation();
   const [deleteTarget, setDeleteTarget] = useState<Payment | null>(null);
 
   const handleDelete = async () => {
@@ -51,34 +53,34 @@ export const PaymentList: React.FC<PaymentListProps> = ({
   };
 
   const customerOptions = [
-    { value: '', label: 'Bütün müştərilər' },
+    { value: '', label: t('common.all') },
     ...customers.map((c) => ({ value: c.id, label: c.fullName })),
   ];
 
   const productOptions = [
-    { value: '', label: 'Bütün məhsullar' },
+    { value: '', label: t('common.all') },
     ...products.map((p) => ({ value: p.id, label: p.name })),
   ];
 
   const columns = [
     {
       key: 'customerName',
-      header: 'Müştəri',
+      header: t('crm.payments.customer'),
       render: (p: Payment) => <span className="font-medium">{p.customerName}</span>,
     },
     {
       key: 'productName',
-      header: 'Məhsul',
+      header: t('crm.products.title'),
       render: (p: Payment) => <span>{p.productName}</span>,
     },
     {
       key: 'productPrice',
-      header: 'Qiymət',
+      header: t('crm.products.price'),
       render: (p: Payment) => <span>{p.productPrice.toFixed(2)}</span>,
     },
     {
       key: 'discount',
-      header: 'Endirim',
+      header: t('crm.payments.amount'),
       render: (p: Payment) => (
         <span className={p.discount > 0 ? 'text-orange-600' : 'text-gray-400'}>
           {p.discount > 0 ? `-${p.discount.toFixed(2)}` : '-'}
@@ -87,19 +89,19 @@ export const PaymentList: React.FC<PaymentListProps> = ({
     },
     {
       key: 'finalAmount',
-      header: 'Yekun',
+      header: t('crm.payments.amount'),
       render: (p: Payment) => <span className="font-semibold text-green-700">{p.finalAmount.toFixed(2)}</span>,
     },
     {
       key: 'paymentMethod',
-      header: 'Üsul',
+      header: t('crm.payments.method'),
       render: (p: Payment) => (
         <span className="text-xs">{PAYMENT_METHOD_LABELS[p.paymentMethod as PaymentMethod] ?? p.paymentMethod}</span>
       ),
     },
     {
       key: 'paymentDate',
-      header: 'Tarix',
+      header: t('crm.payments.date'),
       render: (p: Payment) => <span className="text-xs">{p.paymentDate}</span>,
     },
     {
@@ -112,7 +114,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
             variant="ghost"
             size="sm"
             onClick={(e) => { e.stopPropagation(); onEdit(p); }}
-            title="Redaktə et"
+            title={t('common.edit')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -122,7 +124,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
             variant="ghost"
             size="sm"
             onClick={(e) => { e.stopPropagation(); setDeleteTarget(p); }}
-            title="Sil"
+            title={t('common.delete')}
           >
             <svg className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -142,7 +144,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
             options={customerOptions}
             value={filter.customerId ?? ''}
             onChange={(v) => onFilterChange({ ...filter, customerId: v || undefined })}
-            placeholder="Müştəri filtr"
+            placeholder={t('crm.payments.customer')}
           />
         </div>
         <div className="w-44">
@@ -150,21 +152,21 @@ export const PaymentList: React.FC<PaymentListProps> = ({
             options={productOptions}
             value={filter.productId ?? ''}
             onChange={(v) => onFilterChange({ ...filter, productId: v || undefined })}
-            placeholder="Məhsul filtr"
+            placeholder={t('crm.products.title')}
           />
         </div>
         <Input
           type="date"
           value={filter.dateFrom ?? ''}
           onChange={(e) => onFilterChange({ ...filter, dateFrom: e.target.value || undefined })}
-          placeholder="Başlanğıc"
+          placeholder={t('crm.payments.date')}
           className="w-36"
         />
         <Input
           type="date"
           value={filter.dateTo ?? ''}
           onChange={(e) => onFilterChange({ ...filter, dateTo: e.target.value || undefined })}
-          placeholder="Son"
+          placeholder={t('crm.payments.date')}
           className="w-36"
         />
         <div className="flex-1" />
@@ -174,7 +176,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
           </svg>
           Excel
         </Button>
-        <Button onClick={onAdd}>+ Yeni ödəniş</Button>
+        <Button onClick={onAdd}>+ {t('crm.payments.addPayment')}</Button>
       </div>
 
       <Table
@@ -182,30 +184,29 @@ export const PaymentList: React.FC<PaymentListProps> = ({
         data={payments}
         keyExtractor={(p) => p.id}
         isLoading={isLoading}
-        emptyMessage="Ödəniş tapılmadı"
+        emptyMessage={t('crm.payments.noPayments')}
       />
 
       {/* Delete Confirmation */}
       <Modal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        title="Ödənişi sil"
+        title={t('crm.payments.deleteConfirm')}
         size="sm"
       >
         <p className="text-sm text-gray-600">
-          Bu ödənişi silmək istədiyinizə əminsiniz?
           {deleteTarget && (
             <span className="block mt-1 font-medium">
-              {deleteTarget.customerName} — {deleteTarget.productName} — {deleteTarget.finalAmount.toFixed(2)} AZN
+              {deleteTarget.customerName} — {deleteTarget.productName} — {deleteTarget.finalAmount.toFixed(2)}
             </span>
           )}
         </p>
         <ModalFooter>
           <Button variant="secondary" onClick={() => setDeleteTarget(null)}>
-            Ləğv et
+            {t('common.cancel')}
           </Button>
           <Button variant="danger" onClick={handleDelete}>
-            Sil
+            {t('common.delete')}
           </Button>
         </ModalFooter>
       </Modal>

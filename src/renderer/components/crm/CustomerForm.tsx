@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, ModalFooter } from '../ui/Modal';
 import { Input, Textarea } from '../ui/Input';
 import { Dropdown } from '../ui/Dropdown';
@@ -24,6 +25,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
   onSubmit,
   customer,
 }) => {
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [status, setStatus] = useState<string>(DEFAULT_CUSTOMER_STATUS);
@@ -53,11 +55,11 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
     setError(null);
 
     if (!fullName.trim()) {
-      setError('Ad soyad daxil edin.');
+      setError(t('crm.customers.name'));
       return;
     }
     if (!phoneNumber.trim()) {
-      setError('Telefon nömrəsi daxil edin.');
+      setError(t('crm.customers.phone'));
       return;
     }
 
@@ -93,7 +95,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? 'Müştərini redaktə et' : 'Yeni müştəri'}
+      title={isEditing ? t('crm.customers.form.editTitle') : t('crm.customers.form.createTitle')}
       size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -104,42 +106,42 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
         )}
 
         <Input
-          label="Ad Soyad"
+          label={t('crm.customers.name')}
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          placeholder="Müştərinin adı soyadı"
+          placeholder={t('crm.customers.form.namePlaceholder')}
           required
         />
 
         <Input
-          label="Telefon nömrəsi"
+          label={t('crm.customers.phone')}
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
-          placeholder="994XXXXXXXXX"
+          placeholder={t('crm.customers.form.phonePlaceholder')}
           required
         />
 
         <Dropdown
-          label="Status"
+          label={t('common.status')}
           options={statusOptions}
           value={status}
           onChange={setStatus}
         />
 
         <Textarea
-          label="Qeydlər"
+          label={t('crm.customers.notes')}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Əlavə qeydlər..."
+          placeholder={t('crm.customers.form.notesPlaceholder')}
           rows={3}
         />
 
         <ModalFooter>
           <Button variant="secondary" onClick={onClose} type="button">
-            Ləğv et
+            {t('common.cancel')}
           </Button>
           <Button type="submit" isLoading={isSubmitting}>
-            {isEditing ? 'Yadda saxla' : 'Əlavə et'}
+            {isEditing ? t('common.save') : t('crm.customers.addCustomer')}
           </Button>
         </ModalFooter>
       </form>

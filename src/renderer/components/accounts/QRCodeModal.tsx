@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -29,6 +30,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   onConnect,
   isConnecting = false,
 }) => {
+  const { t } = useTranslation();
   const [method, setMethod] = useState<ConnectionMethod>('qr');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [countryCode, setCountryCode] = useState(defaultCountryCode);
@@ -77,11 +79,11 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   // Show method selection if not started
   if (!hasStarted) {
     return (
-      <Modal isOpen={isOpen} onClose={handleClose} title={`Connect ${accountName}`} size="md">
+      <Modal isOpen={isOpen} onClose={handleClose} title={t('accounts.qr.connectTitle', { name: accountName })} size="md">
         <div className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Connection Method
+              {t('accounts.qr.method')}
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -106,8 +108,8 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                     d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h2M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
                   />
                 </svg>
-                <span className="font-medium text-gray-900">QR Code</span>
-                <p className="text-xs text-gray-500 mt-1">Scan with phone</p>
+                <span className="font-medium text-gray-900">{t('accounts.qr.qrCode')}</span>
+                <p className="text-xs text-gray-500 mt-1">{t('accounts.qr.qrCodeHint')}</p>
               </button>
 
               <button
@@ -132,8 +134,8 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                     d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
                   />
                 </svg>
-                <span className="font-medium text-gray-900">Pairing Code</span>
-                <p className="text-xs text-gray-500 mt-1">Enter phone number</p>
+                <span className="font-medium text-gray-900">{t('accounts.qr.pairingCode')}</span>
+                <p className="text-xs text-gray-500 mt-1">{t('accounts.qr.pairingCodeHint')}</p>
               </button>
             </div>
           </div>
@@ -141,7 +143,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
           {method === 'pairing' && (
             <div className="space-y-4">
               <Dropdown
-                label="Country"
+                label={t('accounts.qr.country')}
                 options={countryOptions}
                 value={countryCode}
                 onChange={setCountryCode}
@@ -149,9 +151,9 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
 
               <Input
                 ref={phoneInputRef}
-                label="Phone Number"
+                label={t('accounts.qr.phoneNumber')}
                 type="tel"
-                placeholder="Enter your phone number"
+                placeholder={t('accounts.qr.phoneNumberPlaceholder')}
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 leftAddon={`+${countryCode}`}
@@ -159,21 +161,21 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
               />
 
               <p className="text-xs text-gray-500">
-                Enter the phone number registered with WhatsApp
+                {t('accounts.qr.phoneNumberHint')}
               </p>
             </div>
           )}
 
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button variant="secondary" onClick={handleClose}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleStartConnection}
               disabled={method === 'pairing' && !phoneNumber.trim()}
               isLoading={isConnecting}
             >
-              {method === 'qr' ? 'Show QR Code' : 'Get Pairing Code'}
+              {method === 'qr' ? t('accounts.qr.showQr') : t('accounts.qr.getPairingCode')}
             </Button>
           </div>
         </div>
@@ -183,19 +185,19 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
 
   // Show QR code or pairing code
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={`Connect ${accountName}`} size="md">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('accounts.qr.connectTitle', { name: accountName })} size="md">
       <div className="text-center">
         {qrCode && !pairingCode && (
           <>
             <div className="bg-white p-4 rounded-xl inline-block mb-4 shadow-sm border">
               <QRCodeSVG value={qrCode} size={200} level="M" />
             </div>
-            <p className="text-gray-600 mb-2">Scan this QR code with WhatsApp</p>
+            <p className="text-gray-600 mb-2">{t('accounts.qr.scanInstruction')}</p>
             <ol className="text-sm text-gray-500 text-left max-w-xs mx-auto space-y-1">
-              <li>1. Open WhatsApp on your phone</li>
-              <li>2. Tap Menu or Settings and select Linked Devices</li>
-              <li>3. Tap on Link a Device</li>
-              <li>4. Point your phone at this screen to capture the QR code</li>
+              <li>{t('accounts.qr.qrSteps.1')}</li>
+              <li>{t('accounts.qr.qrSteps.2')}</li>
+              <li>{t('accounts.qr.qrSteps.3')}</li>
+              <li>{t('accounts.qr.qrSteps.4')}</li>
             </ol>
           </>
         )}
@@ -207,13 +209,13 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                 {pairingCode}
               </p>
             </div>
-            <p className="text-gray-600 mb-2">Enter this code in WhatsApp</p>
+            <p className="text-gray-600 mb-2">{t('accounts.qr.enterCodeInstruction')}</p>
             <ol className="text-sm text-gray-500 text-left max-w-xs mx-auto space-y-1">
-              <li>1. Open WhatsApp on your phone</li>
-              <li>2. Tap Menu or Settings and select Linked Devices</li>
-              <li>3. Tap on Link a Device</li>
-              <li>4. Tap "Link with phone number instead"</li>
-              <li>5. Enter your phone number and the code above</li>
+              <li>{t('accounts.qr.pairingSteps.1')}</li>
+              <li>{t('accounts.qr.pairingSteps.2')}</li>
+              <li>{t('accounts.qr.pairingSteps.3')}</li>
+              <li>{t('accounts.qr.pairingSteps.4')}</li>
+              <li>{t('accounts.qr.pairingSteps.5')}</li>
             </ol>
           </>
         )}
@@ -241,14 +243,14 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
               />
             </svg>
             <p className="mt-4 text-gray-600">
-              {method === 'qr' ? 'Waiting for QR code...' : 'Requesting pairing code...'}
+              {method === 'qr' ? t('accounts.qr.waitingForQr') : t('accounts.qr.requestingCode')}
             </p>
           </div>
         )}
 
         <div className="mt-6 pt-4 border-t">
           <Button variant="secondary" onClick={handleClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
       </div>

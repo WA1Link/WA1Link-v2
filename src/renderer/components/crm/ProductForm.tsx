@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, ModalFooter } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
@@ -17,6 +18,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   onSubmit,
   product,
 }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,12 +42,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     setError(null);
 
     if (!name.trim()) {
-      setError('Məhsul adı daxil edin.');
+      setError(t('crm.products.name'));
       return;
     }
     const priceNum = parseFloat(price);
     if (isNaN(priceNum) || priceNum <= 0) {
-      setError('Düzgün qiymət daxil edin.');
+      setError(t('crm.products.price'));
       return;
     }
 
@@ -68,7 +70,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? 'Məhsulu redaktə et' : 'Yeni məhsul'}
+      title={isEditing ? t('crm.products.form.editTitle') : t('crm.products.form.createTitle')}
       size="sm"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -79,30 +81,30 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         )}
 
         <Input
-          label="Məhsul adı"
+          label={t('crm.products.name')}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Məhsulun adı"
+          placeholder={t('crm.products.form.namePlaceholder')}
           required
         />
 
         <Input
-          label="Qiymət (AZN)"
+          label={t('crm.products.price')}
           type="number"
           step="0.01"
           min="0"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          placeholder="0.00"
+          placeholder={t('crm.products.form.pricePlaceholder')}
           required
         />
 
         <ModalFooter>
           <Button variant="secondary" onClick={onClose} type="button">
-            Ləğv et
+            {t('common.cancel')}
           </Button>
           <Button type="submit" isLoading={isSubmitting}>
-            {isEditing ? 'Yadda saxla' : 'Əlavə et'}
+            {isEditing ? t('common.save') : t('crm.products.addProduct')}
           </Button>
         </ModalFooter>
       </form>

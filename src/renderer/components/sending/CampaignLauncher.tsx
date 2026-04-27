@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/Button';
 import { MessageTemplate, Target, DelayConfig } from '../../../shared/types';
 
@@ -21,6 +22,7 @@ export const CampaignLauncher: React.FC<CampaignLauncherProps> = ({
   onOpenDelaySettings,
   onStartSending,
 }) => {
+  const { t } = useTranslation();
   const canStart = selectedTemplates.length > 0 && targets.length > 0 && isConnected && !isSending;
 
   const estimatedTime = () => {
@@ -41,21 +43,21 @@ export const CampaignLauncher: React.FC<CampaignLauncherProps> = ({
 
   return (
     <div className="card">
-      <h3 className="font-semibold text-gray-900 mb-4">Launch Campaign</h3>
+      <h3 className="font-semibold text-gray-900 mb-4">{t('campaign.launchTitle')}</h3>
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="p-3 bg-gray-50 rounded-lg text-center">
           <p className="text-2xl font-bold text-gray-900">{selectedTemplates.length}</p>
-          <p className="text-xs text-gray-500">Templates</p>
+          <p className="text-xs text-gray-500">{t('campaign.templatesCount')}</p>
         </div>
         <div className="p-3 bg-gray-50 rounded-lg text-center">
           <p className="text-2xl font-bold text-gray-900">{targets.length}</p>
-          <p className="text-xs text-gray-500">Recipients</p>
+          <p className="text-xs text-gray-500">{t('campaign.recipientsCount')}</p>
         </div>
         <div className="p-3 bg-gray-50 rounded-lg text-center">
           <p className="text-2xl font-bold text-gray-900">{estimatedTime()}</p>
-          <p className="text-xs text-gray-500">Est. Duration</p>
+          <p className="text-xs text-gray-500">{t('campaign.estimatedDuration')}</p>
         </div>
       </div>
 
@@ -70,7 +72,7 @@ export const CampaignLauncher: React.FC<CampaignLauncherProps> = ({
                 clipRule="evenodd"
               />
             </svg>
-            <span>Please connect a WhatsApp account first</span>
+            <span>{t('campaign.needAccount')}</span>
           </div>
         )}
 
@@ -83,7 +85,7 @@ export const CampaignLauncher: React.FC<CampaignLauncherProps> = ({
                 clipRule="evenodd"
               />
             </svg>
-            <span>Select at least one message template</span>
+            <span>{t('campaign.needTemplate')}</span>
           </div>
         )}
 
@@ -96,7 +98,7 @@ export const CampaignLauncher: React.FC<CampaignLauncherProps> = ({
                 clipRule="evenodd"
               />
             </svg>
-            <span>Upload an Excel file with target phone numbers</span>
+            <span>{t('campaign.needTargets')}</span>
           </div>
         )}
       </div>
@@ -119,7 +121,7 @@ export const CampaignLauncher: React.FC<CampaignLauncherProps> = ({
             </svg>
           }
         >
-          Start Sending
+          {t('campaign.startSending')}
         </Button>
 
         <Button variant="secondary" onClick={onOpenDelaySettings}>

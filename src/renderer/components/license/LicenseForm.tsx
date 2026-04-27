@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLicenseStore } from '../../stores/useLicenseStore';
 import { Button } from '../ui/Button';
 import { Textarea } from '../ui/Input';
 
 export const LicenseForm: React.FC = () => {
+  const { t } = useTranslation();
   const [licenseKey, setLicenseKey] = useState('');
   const [error, setError] = useState<string | null>(null);
   const { fingerprint, isLoading, activateLicense, licenseState } = useLicenseStore();
@@ -58,7 +60,7 @@ export const LicenseForm: React.FC = () => {
         </div>
 
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Enter License Key</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('license.form.title')}</h2>
 
           {licenseState.reason && !error && (
             <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
@@ -69,8 +71,8 @@ export const LicenseForm: React.FC = () => {
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
               <Textarea
-                label="License Key"
-                placeholder="Paste your license key here..."
+                label={t('license.form.title')}
+                placeholder={t('license.form.placeholder')}
                 value={licenseKey}
                 onChange={(e) => setLicenseKey(e.target.value)}
                 rows={4}
@@ -79,7 +81,7 @@ export const LicenseForm: React.FC = () => {
 
               {fingerprint && (
                 <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-xs text-gray-500 mb-1">Device Fingerprint</p>
+                  <p className="text-xs text-gray-500 mb-1">{t('license.form.deviceFingerprint')}</p>
                   <p className="font-mono text-sm text-gray-700 break-all">{fingerprint}</p>
                   <div className="mt-2 text-right">
                     <button
@@ -87,21 +89,21 @@ export const LicenseForm: React.FC = () => {
                       onClick={copyFingerprint}
                       className="text-xs px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
                     >
-                      {copied ? 'Copied!' : 'Copy'}
+                      {copied ? t('common.copied') : t('common.copy')}
                     </button>
                   </div>
                 </div>
               )}
 
               <Button type="submit" className="w-full" isLoading={isLoading}>
-                Activate License
+                {t('license.form.activate')}
               </Button>
             </div>
           </form>
 
           <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
             <p className="text-sm font-medium text-gray-700 text-center mb-3">
-              Don't have a license yet?
+              {t('license.form.noLicense')}
             </p>
             <button
               type="button"
@@ -111,7 +113,7 @@ export const LicenseForm: React.FC = () => {
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
               </svg>
-              Purchase License
+              {t('license.form.purchase')}
             </button>
           </div>
         </div>

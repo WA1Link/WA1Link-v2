@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/Button';
 import { Input, Textarea } from '../ui/Input';
 import { Modal, ModalFooter } from '../ui/Modal';
@@ -25,6 +26,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
   isLoading = false,
   editTemplate = null,
 }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [contents, setContents] = useState<ContentItem[]>([
     { id: '1', contentType: 'text', contentValue: '' },
@@ -127,14 +129,14 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={isEditing ? 'Edit Message Template' : 'Create Message Template'}
+      title={isEditing ? t('messageTemplates.composer.editTitle') : t('messageTemplates.composer.createTitle')}
       size="lg"
     >
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <Input
-            label="Template Name"
-            placeholder="Enter template name (optional)"
+            label={t('messageTemplates.composer.templateName')}
+            placeholder={t('messageTemplates.composer.templateNamePlaceholder')}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -142,7 +144,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
           {/* Variable buttons */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Insert Variable
+              {t('messageTemplates.composer.insertVariable')}
             </label>
             <div className="flex flex-wrap gap-2">
               {['Name', 'Number', 'Company', 'Email', 'Custom1', 'Custom2'].map((v) => (
@@ -160,12 +162,12 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
 
           {/* Content items */}
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-gray-700">Message Content</label>
+            <label className="block text-sm font-medium text-gray-700">{t('messageTemplates.composer.messageContent')}</label>
             {contents.map((content) => (
               <div key={content.id} className="flex gap-2">
                 {content.contentType === 'text' ? (
                   <Textarea
-                    placeholder="Enter message text..."
+                    placeholder={t('messageTemplates.composer.messageContentPlaceholder')}
                     value={content.contentValue}
                     onChange={(e) => handleUpdateContent(content.id, e.target.value)}
                     rows={3}
@@ -174,7 +176,9 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
                 ) : (
                   <div className="flex-1 p-3 border rounded-lg bg-gray-50">
                     <p className="text-sm text-gray-600 truncate">
-                      Image: {content.contentValue ? content.contentValue.split(/[/\\]/).pop() : 'No file selected'}
+                      {t('messageTemplates.composer.imageLabel', {
+                        filename: content.contentValue ? content.contentValue.split(/[/\\]/).pop() : '—',
+                      })}
                     </p>
                     <Button
                       type="button"
@@ -188,7 +192,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
                         }
                       }}
                     >
-                      Choose Image
+                      {t('messageTemplates.composer.chooseImage')}
                     </Button>
                   </div>
                 )}
@@ -217,20 +221,20 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
           {/* Add content buttons */}
           <div className="flex gap-2">
             <Button type="button" variant="secondary" size="sm" onClick={handleAddText}>
-              + Add Text
+              {t('messageTemplates.composer.addText')}
             </Button>
             <Button type="button" variant="secondary" size="sm" onClick={handleAddImage}>
-              + Add Image
+              {t('messageTemplates.composer.addImage')}
             </Button>
           </div>
         </div>
 
         <ModalFooter>
           <Button type="button" variant="secondary" onClick={handleClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" isLoading={isLoading}>
-            {isEditing ? 'Save Changes' : 'Create Template'}
+            {isEditing ? t('messageTemplates.composer.saveChanges') : t('messageTemplates.composer.create')}
           </Button>
         </ModalFooter>
       </form>

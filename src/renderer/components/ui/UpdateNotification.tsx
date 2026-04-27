@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type UpdateState = 'idle' | 'available' | 'downloaded';
 
 export const UpdateNotification: React.FC = () => {
+  const { t } = useTranslation();
   const [updateState, setUpdateState] = useState<UpdateState>('idle');
   const [version, setVersion] = useState('');
 
@@ -41,21 +43,20 @@ export const UpdateNotification: React.FC = () => {
               d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
             />
           </svg>
-          <span className="font-semibold text-blue-800 text-sm">Update Available</span>
+          <span className="font-semibold text-blue-800 text-sm">{t('update.available')}</span>
         </div>
 
         <div className="p-4">
           {updateState === 'available' && (
             <>
               <p className="text-sm text-gray-700 mb-3">
-                A new version <span className="font-semibold text-gray-900">v{version}</span> has been found.
-                Downloading...
+                {t('update.downloading', { version })}
               </p>
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                   <div className="h-full bg-blue-500 rounded-full animate-pulse w-2/3" />
                 </div>
-                <span className="text-xs text-gray-500">Downloading</span>
+                <span className="text-xs text-gray-500">{t('update.downloadingShort')}</span>
               </div>
             </>
           )}
@@ -63,21 +64,20 @@ export const UpdateNotification: React.FC = () => {
           {updateState === 'downloaded' && (
             <>
               <p className="text-sm text-gray-700 mb-3">
-                Version <span className="font-semibold text-gray-900">v{version}</span> has been downloaded.
-                Restart the application to install.
+                {t('update.downloaded', { version })}
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={handleInstall}
                   className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  Restart Now
+                  {t('update.restart')}
                 </button>
                 <button
                   onClick={() => setUpdateState('idle')}
                   className="px-4 py-2 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  Later
+                  {t('update.later')}
                 </button>
               </div>
             </>
