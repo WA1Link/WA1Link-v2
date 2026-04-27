@@ -264,7 +264,7 @@
   "schedulerUi": {
     "running": "İşləyir ({{count}})",
     "upcoming": "Gözlənilən ({{count}})",
-    "history": "Tarixçə ({{count}})",
+    "historyHeading": "Tarixçə ({{count}})",
     "messageHistoryTitle": "Göndərilmiş mesajların tarixçəsi",
     "noJobs": "Planlanmış tapşırıq yoxdur",
     "noJobsHint": "Mesajlar bölməsinə keçin və planlanmış kampaniya yaratmaq üçün Planlama seçimini istifadə edin.",
@@ -357,9 +357,24 @@
     "dashboard": {
       "title": "İdarə paneli",
       "totalCustomers": "Cəmi müştərilər",
+      "activeCustomers": "Aktiv müştərilər",
       "totalProducts": "Cəmi məhsullar",
       "totalPayments": "Cəmi ödənişlər",
-      "totalRevenue": "Ümumi gəlir"
+      "totalRevenue": "Ümumi gəlir",
+      "statusDistribution": "Status paylanması"
+    },
+    "customerStatus": {
+      "Potensial müştəri": "Potensial müştəri",
+      "Konsultasiya olunub": "Konsultasiya olunub",
+      "Cavab vermədi": "Cavab vermədi",
+      "Söz verib": "Söz verib",
+      "Müştəri": "Müştəri",
+      "İtirilmiş müştəri": "İtirilmiş müştəri"
+    },
+    "paymentMethods": {
+      "cash": "Nağd",
+      "bank_transfer": "Bank köçürməsi",
+      "card": "Kart"
     },
     "customers": {
       "title": "Müştərilər",

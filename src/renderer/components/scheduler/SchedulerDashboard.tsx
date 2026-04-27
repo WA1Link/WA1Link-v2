@@ -11,18 +11,12 @@ export const SchedulerDashboard: React.FC = () => {
   const { jobs, isLoading, fetchJobs, cancelJob, deleteJob, updateJobProgress } = useScheduleStore();
   const { addToast } = useUIStore();
 
-  // Set up IPC listeners and fetch jobs
+  // job-progress IPC subscription is hoisted to App-level via
+  // useGlobalSubscriptions — keeps the dashboard live even when the user is
+  // on another page while a job is running.
   useEffect(() => {
     fetchJobs();
-
-    const unsubProgress = window.electronAPI.scheduler.onJobProgress((progress) => {
-      updateJobProgress(progress);
-    });
-
-    return () => {
-      unsubProgress();
-    };
-  }, [fetchJobs, updateJobProgress]);
+  }, [fetchJobs]);
 
   const handleCancel = async (jobId: string) => {
     try {
@@ -74,7 +68,7 @@ export const SchedulerDashboard: React.FC = () => {
       {completedJobs.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            {t('schedulerUi.history', { count: completedJobs.length })}
+            {t('schedulerUi.historyHeading', { count: completedJobs.length })}
           </h2>
           <ScheduledJobList jobs={completedJobs} onCancel={handleCancel} onDelete={handleDelete} />
         </div>

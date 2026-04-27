@@ -264,7 +264,7 @@
   "schedulerUi": {
     "running": "Выполняются ({{count}})",
     "upcoming": "Предстоящие ({{count}})",
-    "history": "История ({{count}})",
+    "historyHeading": "История ({{count}})",
     "messageHistoryTitle": "История отправленных сообщений",
     "noJobs": "Нет запланированных задач",
     "noJobsHint": "Перейдите в раздел Сообщения и используйте опцию «Запланировать», чтобы создать кампанию.",
@@ -357,9 +357,24 @@
     "dashboard": {
       "title": "Панель",
       "totalCustomers": "Всего клиентов",
+      "activeCustomers": "Активные клиенты",
       "totalProducts": "Всего продуктов",
       "totalPayments": "Всего платежей",
-      "totalRevenue": "Общий доход"
+      "totalRevenue": "Общий доход",
+      "statusDistribution": "Распределение статусов"
+    },
+    "customerStatus": {
+      "Potensial müştəri": "Потенциальный",
+      "Konsultasiya olunub": "Проконсультирован",
+      "Cavab vermədi": "Нет ответа",
+      "Söz verib": "Обещал",
+      "Müştəri": "Клиент",
+      "İtirilmiş müştəri": "Потерян"
+    },
+    "paymentMethods": {
+      "cash": "Наличные",
+      "bank_transfer": "Банковский перевод",
+      "card": "Карта"
     },
     "customers": {
       "title": "Клиенты",

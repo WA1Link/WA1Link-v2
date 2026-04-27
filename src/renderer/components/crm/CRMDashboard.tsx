@@ -22,7 +22,7 @@ export const CRMDashboard: React.FC<CRMDashboardProps> = ({ stats }) => {
       color: 'text-blue-600 bg-blue-50',
     },
     {
-      label: t('crm.dashboard.totalCustomers'),
+      label: t('crm.dashboard.activeCustomers'),
       value: stats.activeCustomers,
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -72,14 +72,14 @@ export const CRMDashboard: React.FC<CRMDashboardProps> = ({ stats }) => {
 
       {/* Status Distribution */}
       <div className="bg-white rounded-lg border p-4">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">{t('common.status')}</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-3">{t('crm.dashboard.statusDistribution')}</h3>
         <div className="flex flex-wrap gap-2">
           {CUSTOMER_STATUSES.map((status) => (
             <span
               key={status}
               className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${CUSTOMER_STATUS_COLORS[status]}`}
             >
-              {status}
+              {t(`crm.customerStatus.${status}` as any)}
               <span className="font-bold">{stats.statusCounts[status] ?? 0}</span>
             </span>
           ))}

@@ -59,7 +59,7 @@ export const CustomerDetail: React.FC<CustomerDetailProps> = ({
           <div>
             <p className="text-xs text-gray-500">{t('common.status')}</p>
             <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${CUSTOMER_STATUS_COLORS[customer.status]}`}>
-              {customer.status}
+              {t(`crm.customerStatus.${customer.status}` as any)}
             </span>
           </div>
           <div>
@@ -113,7 +113,7 @@ export const CustomerDetail: React.FC<CustomerDetailProps> = ({
                       <td className="px-3 py-2">{p.productPrice.toFixed(2)}</td>
                       <td className="px-3 py-2">{p.discount > 0 ? `-${p.discount.toFixed(2)}` : '-'}</td>
                       <td className="px-3 py-2 font-medium">{p.finalAmount.toFixed(2)}</td>
-                      <td className="px-3 py-2">{PAYMENT_METHOD_LABELS[p.paymentMethod as PaymentMethod] ?? p.paymentMethod}</td>
+                      <td className="px-3 py-2">{t(`crm.paymentMethods.${p.paymentMethod}` as any) || PAYMENT_METHOD_LABELS[p.paymentMethod as PaymentMethod]}</td>
                       <td className="px-3 py-2">{p.paymentDate}</td>
                     </tr>
                   ))}

@@ -264,7 +264,7 @@
   "schedulerUi": {
     "running": "Running ({{count}})",
     "upcoming": "Upcoming ({{count}})",
-    "history": "History ({{count}})",
+    "historyHeading": "History ({{count}})",
     "messageHistoryTitle": "Sent Messages History",
     "noJobs": "No scheduled jobs",
     "noJobsHint": "Go to Messaging and use the Schedule option to create a scheduled campaign.",
@@ -357,9 +357,24 @@
     "dashboard": {
       "title": "Dashboard",
       "totalCustomers": "Total Customers",
+      "activeCustomers": "Active Customers",
       "totalProducts": "Total Products",
       "totalPayments": "Total Payments",
-      "totalRevenue": "Total Revenue"
+      "totalRevenue": "Total Revenue",
+      "statusDistribution": "Status Distribution"
+    },
+    "customerStatus": {
+      "Potensial müştəri": "Lead",
+      "Konsultasiya olunub": "Consulted",
+      "Cavab vermədi": "No Response",
+      "Söz verib": "Promised",
+      "Müştəri": "Customer",
+      "İtirilmiş müştəri": "Lost"
+    },
+    "paymentMethods": {
+      "cash": "Cash",
+      "bank_transfer": "Bank Transfer",
+      "card": "Card"
     },
     "customers": {
       "title": "Customers",

@@ -8,6 +8,7 @@ import {
 
 interface MessageState {
   templates: MessageTemplate[];
+  selectedTemplateIds: string[];
   targets: Target[];
   isLoading: boolean;
   error: string | null;
@@ -37,6 +38,7 @@ type MessageStore = MessageState & MessageActions;
 export const useMessageStore = create<MessageStore>((set, get) => ({
   // Initial state
   templates: [],
+  selectedTemplateIds: [],
   targets: [],
   isLoading: false,
   error: null,
@@ -45,7 +47,16 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
   fetchTemplates: async () => {
     set({ isLoading: true, error: null });
     try {
-      const templates = await window.electronAPI.message.getAllTemplates();
+      const fetched = await window.electronAPI.message.getAllTemplates();
+      // Re-apply the renderer-side selection set so a refetch (mount,
+      // hot-reload, navigate-back) doesn't blow away the user's checkboxes.
+      // The DB doesn't persist `is_selected` per-user-action, so selection is
+      // a renderer concern and must survive template-data churn.
+      const selectedIds = get().selectedTemplateIds;
+      const templates = fetched.map((t) => ({
+        ...t,
+        isSelected: selectedIds.includes(t.id),
+      }));
       set({ templates, isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
@@ -75,7 +86,13 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       const template = await window.electronAPI.message.updateTemplate(input);
       if (template) {
         set((state) => ({
-          templates: state.templates.map((t) => (t.id === template.id ? template : t)),
+          templates: state.templates.map((t) =>
+            t.id === template.id
+              // Re-apply renderer-side isSelected so editing a selected
+              // template doesn't visually un-check it.
+              ? { ...template, isSelected: state.selectedTemplateIds.includes(template.id) }
+              : t
+          ),
           isLoading: false,
         }));
       }
@@ -93,6 +110,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
       await window.electronAPI.message.deleteTemplate(id);
       set((state) => ({
         templates: state.templates.filter((t) => t.id !== id),
+        selectedTemplateIds: state.selectedTemplateIds.filter((x) => x !== id),
         isLoading: false,
       }));
     } catch (error) {
@@ -101,25 +119,33 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
     }
   },
 
-  // Toggle template selection
+  // Toggle template selection — drives the canonical selectedTemplateIds set
+  // and mirrors the flag onto each template so existing components that read
+  // `template.isSelected` keep working unchanged.
   toggleTemplateSelection: (id) => {
-    set((state) => ({
-      templates: state.templates.map((t) =>
-        t.id === id ? { ...t, isSelected: !t.isSelected } : t
-      ),
-    }));
+    set((state) => {
+      const has = state.selectedTemplateIds.includes(id);
+      const newIds = has
+        ? state.selectedTemplateIds.filter((x) => x !== id)
+        : [...state.selectedTemplateIds, id];
+      return {
+        selectedTemplateIds: newIds,
+        templates: state.templates.map((t) =>
+          t.id === id ? { ...t, isSelected: !has } : t
+        ),
+      };
+    });
   },
 
   // Get selected templates
   getSelectedTemplates: () => {
-    return get().templates.filter((t) => t.isSelected);
+    const ids = get().selectedTemplateIds;
+    return get().templates.filter((t) => ids.includes(t.id));
   },
 
   // Get selected template IDs
   getSelectedTemplateIds: () => {
-    return get()
-      .templates.filter((t) => t.isSelected)
-      .map((t) => t.id);
+    return [...get().selectedTemplateIds];
   },
 
   // Set targets

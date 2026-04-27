@@ -43,7 +43,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
 
   const statusFilterOptions = [
     { value: '', label: t('common.all') },
-    ...CUSTOMER_STATUSES.map((s) => ({ value: s, label: s })),
+    ...CUSTOMER_STATUSES.map((s) => ({ value: s, label: t(`crm.customerStatus.${s}` as any) })),
   ];
 
   const handleDelete = async () => {
@@ -83,7 +83,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
       header: t('common.status'),
       render: (c: Customer) => (
         <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${CUSTOMER_STATUS_COLORS[c.status]}`}>
-          {c.status}
+          {t(`crm.customerStatus.${c.status}` as any)}
         </span>
       ),
     },

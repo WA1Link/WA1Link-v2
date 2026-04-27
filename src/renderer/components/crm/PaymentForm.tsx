@@ -148,7 +148,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
   const methodOptions = PAYMENT_METHODS.map((m) => ({
     value: m,
-    label: PAYMENT_METHOD_LABELS[m],
+    label: t(`crm.paymentMethods.${m}` as any),
   }));
 
   return (

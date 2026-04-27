@@ -96,7 +96,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       key: 'paymentMethod',
       header: t('crm.payments.method'),
       render: (p: Payment) => (
-        <span className="text-xs">{PAYMENT_METHOD_LABELS[p.paymentMethod as PaymentMethod] ?? p.paymentMethod}</span>
+        <span className="text-xs">{t(`crm.paymentMethods.${p.paymentMethod}` as any) || PAYMENT_METHOD_LABELS[p.paymentMethod as PaymentMethod]}</span>
       ),
     },
     {

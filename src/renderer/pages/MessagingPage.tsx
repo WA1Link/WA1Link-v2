@@ -59,30 +59,9 @@ export const MessagingPage: React.FC = () => {
     ? connectionStatus.get(activeAccountId) === 'connected'
     : false;
 
-  // Set up IPC listeners
-  useEffect(() => {
-    const unsubProgress = window.electronAPI.message.onProgress((prog) => {
-      updateProgress(prog);
-    });
-
-    const unsubComplete = window.electronAPI.message.onComplete((result) => {
-      onSendingComplete(result);
-      const message = result.crmStats
-        ? t('pages.messaging.sendingCompleteWithCrm', {
-            sent: result.sent,
-            failed: result.failed,
-            newContacts: result.crmStats.newContacts,
-            skippedContacts: result.crmStats.skippedContacts,
-          })
-        : t('pages.messaging.sendingComplete', { sent: result.sent, failed: result.failed });
-      addToast({ type: 'success', message });
-    });
-
-    return () => {
-      unsubProgress();
-      unsubComplete();
-    };
-  }, []);
+  // IPC listeners for message progress / complete are subscribed globally in
+  // App.tsx via useGlobalSubscriptions — they must live for the whole session
+  // so that navigating away mid-send doesn't freeze the progress UI.
 
   // Fetch templates on mount
   useEffect(() => {

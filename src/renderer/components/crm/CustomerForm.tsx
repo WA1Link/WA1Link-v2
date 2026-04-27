@@ -89,7 +89,10 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
     }
   };
 
-  const statusOptions = CUSTOMER_STATUSES.map((s) => ({ value: s, label: s }));
+  const statusOptions = CUSTOMER_STATUSES.map((s) => ({
+    value: s,
+    label: t(`crm.customerStatus.${s}` as any),
+  }));
 
   return (
     <Modal
