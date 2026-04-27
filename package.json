@@ -1,6 +1,6 @@
 {
   "name": "wa1link-v2",
-  "version": "1.4.8",
+  "version": "1.4.9",
   "description": "WhatsApp Bulk Messaging Desktop App",
   "main": "dist/main/main/index.js",
   "homepage": "./",
