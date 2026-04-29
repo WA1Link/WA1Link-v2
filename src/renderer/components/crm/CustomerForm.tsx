@@ -4,6 +4,7 @@ import { Modal, ModalFooter } from '../ui/Modal';
 import { Input, Textarea } from '../ui/Input';
 import { Dropdown } from '../ui/Dropdown';
 import { Button } from '../ui/Button';
+import { useCRMStore } from '../../stores/useCRMStore';
 import {
   Customer,
   CreateCustomerInput,
@@ -26,14 +27,20 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
   customer,
 }) => {
   const { t } = useTranslation();
+  const { tags: allTags, fetchTags } = useCRMStore();
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [status, setStatus] = useState<string>(DEFAULT_CUSTOMER_STATUS);
   const [notes, setNotes] = useState('');
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isEditing = !!customer;
+
+  useEffect(() => {
+    if (isOpen) fetchTags();
+  }, [isOpen, fetchTags]);
 
   useEffect(() => {
     if (customer) {
@@ -41,14 +48,25 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
       setPhoneNumber(customer.phoneNumber);
       setStatus(customer.status);
       setNotes(customer.notes ?? '');
+      setSelectedTagIds(new Set(customer.tags.map((t) => t.id)));
     } else {
       setFullName('');
       setPhoneNumber('');
       setStatus(DEFAULT_CUSTOMER_STATUS);
       setNotes('');
+      setSelectedTagIds(new Set());
     }
     setError(null);
   }, [customer, isOpen]);
+
+  const toggleTag = (tagId: string) => {
+    setSelectedTagIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(tagId)) next.delete(tagId);
+      else next.add(tagId);
+      return next;
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +83,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
 
     setIsSubmitting(true);
     try {
+      const tagIds = Array.from(selectedTagIds);
       if (isEditing) {
         await onSubmit({
           id: customer!.id,
@@ -72,6 +91,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
           phoneNumber: phoneNumber.trim(),
           status: status as any,
           notes: notes.trim() || undefined,
+          tagIds,
         } as UpdateCustomerInput);
       } else {
         await onSubmit({
@@ -79,6 +99,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
           phoneNumber: phoneNumber.trim(),
           status: status as any,
           notes: notes.trim() || undefined,
+          tagIds,
         } as CreateCustomerInput);
       }
       onClose();
@@ -138,6 +159,35 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
           placeholder={t('crm.customers.form.notesPlaceholder')}
           rows={3}
         />
+
+        {/* Tag picker */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {t('tags.title')}
+          </label>
+          {allTags.length === 0 ? (
+            <p className="text-xs text-gray-500">{t('tags.noneCreatedYet')}</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {allTags.map((tag) => {
+                const isOn = selectedTagIds.has(tag.id);
+                return (
+                  <button
+                    type="button"
+                    key={tag.id}
+                    onClick={() => toggleTag(tag.id)}
+                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition ${
+                      isOn ? 'text-white' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+                    }`}
+                    style={isOn ? { backgroundColor: tag.color } : undefined}
+                  >
+                    {tag.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         <ModalFooter>
           <Button variant="secondary" onClick={onClose} type="button">

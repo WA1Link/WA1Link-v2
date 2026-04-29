@@ -16,6 +16,7 @@ interface ContactState {
   isLoadingChats: boolean;
   isExtracting: boolean;
   isExporting: boolean;
+  isAddingToCRM: boolean;
   error: string | null;
 }
 
@@ -48,6 +49,12 @@ interface ContactActions {
   exportGroupContacts: (accountId: string) => Promise<string>;
   exportPersonalContacts: (accountId: string) => Promise<string>;
 
+  // CRM
+  addSelectedToCRM: (
+    accountId: string,
+    scope: 'groups' | 'chats'
+  ) => Promise<{ created: number; skipped: number; failed: number }>;
+
   // Persistence
   saveContacts: () => Promise<void>;
   loadSavedContacts: () => Promise<void>;
@@ -69,6 +76,7 @@ export const useContactStore = create<ContactStore>((set, get) => ({
   isLoadingChats: false,
   isExtracting: false,
   isExporting: false,
+  isAddingToCRM: false,
   error: null,
 
   // Fetch groups
@@ -296,6 +304,46 @@ export const useContactStore = create<ContactStore>((set, get) => ({
       return filePath;
     } catch (error) {
       set({ error: (error as Error).message, isExporting: false });
+      throw error;
+    }
+  },
+
+  // Add selected contacts to CRM (current tab's selection).
+  // Each contact carries its source: 'group' + group name, or 'chat' + chat name.
+  addSelectedToCRM: async (accountId, scope) => {
+    const { selectedGroupIds, selectedChatJids } = get();
+
+    if (scope === 'groups' && selectedGroupIds.size === 0) {
+      throw new Error('No groups selected');
+    }
+    if (scope === 'chats' && selectedChatJids.size === 0) {
+      throw new Error('No chats selected');
+    }
+
+    set({ isAddingToCRM: true, error: null });
+    try {
+      const contacts =
+        scope === 'groups'
+          ? await window.electronAPI.contact.extractFromGroups(
+              accountId,
+              Array.from(selectedGroupIds)
+            )
+          : await window.electronAPI.contact.extractFromChats(
+              accountId,
+              Array.from(selectedChatJids)
+            );
+
+      const payload = contacts.map((c) => ({
+        phone: c.phoneNumber,
+        name: c.name,
+        sourceType: c.sourceType as 'group' | 'chat',
+        sourceName: c.sourceName ?? null,
+      }));
+      const result = await window.electronAPI.customer.ensureBulk(payload);
+      set({ isAddingToCRM: false });
+      return result;
+    } catch (error) {
+      set({ error: (error as Error).message, isAddingToCRM: false });
       throw error;
     }
   },

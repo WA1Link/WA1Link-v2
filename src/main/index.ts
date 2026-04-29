@@ -6,6 +6,7 @@ import { initDatabase, closeDatabase } from './database';
 import { registerAllIPC } from './ipc';
 import { socketService } from './services/whatsapp/socket.service';
 import { schedulerService } from './services/scheduler/scheduler.service';
+import { reportStartup } from './services/telemetry/tmstat.service';
 import { IPC_CHANNELS } from '../shared/constants/channels';
 
 // Use a different userData path to avoid GPU cache lock issues
@@ -57,6 +58,9 @@ app.whenReady().then(async () => {
 
   // Start scheduler
   schedulerService.start();
+
+  // Fire telemetry ping (non-blocking; failures are swallowed)
+  void reportStartup();
 
   // Check for updates (production only)
   if (app.isPackaged) {

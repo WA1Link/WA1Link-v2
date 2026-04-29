@@ -10,6 +10,7 @@ import { ProductList } from '../components/crm/ProductList';
 import { ProductForm } from '../components/crm/ProductForm';
 import { PaymentList } from '../components/crm/PaymentList';
 import { PaymentForm } from '../components/crm/PaymentForm';
+import { TagManager } from '../components/crm/TagManager';
 import {
   Customer,
   Product,
@@ -22,7 +23,7 @@ import {
   UpdatePaymentInput,
 } from '../../shared/types';
 
-type CRMTab = 'customers' | 'products' | 'payments';
+type CRMTab = 'customers' | 'products' | 'payments' | 'tags';
 
 export const CRMPage: React.FC = () => {
   const { t } = useTranslation();
@@ -33,6 +34,7 @@ export const CRMPage: React.FC = () => {
     { id: 'customers', label: t('crm.customers.title') },
     { id: 'products', label: t('crm.products.title') },
     { id: 'payments', label: t('crm.payments.title') },
+    { id: 'tags', label: t('tags.title') },
   ];
 
   // Modals
@@ -50,6 +52,7 @@ export const CRMPage: React.FC = () => {
     store.fetchProducts();
     store.fetchPayments();
     store.fetchStats();
+    store.fetchTags();
   }, []);
 
   // Customer handlers
@@ -184,6 +187,7 @@ export const CRMPage: React.FC = () => {
           onViewDetails={(c) => setDetailCustomer(c)}
           onSendMessage={handleSendMessage}
           onExport={handleExportCustomers}
+          tags={store.tags}
         />
       )}
 
@@ -196,6 +200,8 @@ export const CRMPage: React.FC = () => {
           onDelete={handleProductDelete}
         />
       )}
+
+      {store.activeTab === 'tags' && <TagManager />}
 
       {store.activeTab === 'payments' && (
         <PaymentList

@@ -58,6 +58,15 @@ export const IPC_CHANNELS = {
     SEARCH: 'customer:search',
     GET_STATS: 'customer:get-stats',
     EXPORT: 'customer:export',
+    ENSURE_BULK: 'customer:ensure-bulk',
+    GET_SOURCES: 'customer:get-sources',
+  },
+  TAG: {
+    GET_ALL: 'tag:get-all',
+    CREATE: 'tag:create',
+    UPDATE: 'tag:update',
+    DELETE: 'tag:delete',
+    SET_FOR_CUSTOMER: 'tag:set-for-customer',
   },
   PRODUCT: {
     CREATE: 'product:create',

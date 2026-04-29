@@ -116,6 +116,17 @@ const electronAPI: ElectronAPI = {
     search: (filter) => ipcRenderer.invoke(IPC_CHANNELS.CUSTOMER.SEARCH, filter),
     getStats: () => ipcRenderer.invoke(IPC_CHANNELS.CUSTOMER.GET_STATS),
     export: (filter) => ipcRenderer.invoke(IPC_CHANNELS.CUSTOMER.EXPORT, filter),
+    ensureBulk: (contacts) => ipcRenderer.invoke(IPC_CHANNELS.CUSTOMER.ENSURE_BULK, contacts),
+    getSources: () => ipcRenderer.invoke(IPC_CHANNELS.CUSTOMER.GET_SOURCES),
+  },
+
+  tag: {
+    getAll: () => ipcRenderer.invoke(IPC_CHANNELS.TAG.GET_ALL),
+    create: (input) => ipcRenderer.invoke(IPC_CHANNELS.TAG.CREATE, input),
+    update: (input) => ipcRenderer.invoke(IPC_CHANNELS.TAG.UPDATE, input),
+    delete: (id) => ipcRenderer.invoke(IPC_CHANNELS.TAG.DELETE, id),
+    setForCustomer: (customerId, tagIds) =>
+      ipcRenderer.invoke(IPC_CHANNELS.TAG.SET_FOR_CUSTOMER, customerId, tagIds),
   },
 
   product: {

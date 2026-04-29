@@ -33,6 +33,10 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
 
 // --- Customer ---
 
+export type CustomerSourceType = 'group' | 'chat' | 'manual' | 'imported';
+
+export const CUSTOMER_SOURCE_TYPES: CustomerSourceType[] = ['group', 'chat', 'manual', 'imported'];
+
 export interface Customer {
   id: string;
   fullName: string;
@@ -41,6 +45,9 @@ export interface Customer {
   notes: string | null;
   totalPaid: number;
   isActive: boolean;
+  sourceType: CustomerSourceType;
+  sourceName: string | null;
+  tags: Tag[];
   createdAt: string;
   updatedAt: string;
 }
@@ -50,6 +57,9 @@ export interface CreateCustomerInput {
   phoneNumber: string;
   status?: CustomerStatus;
   notes?: string;
+  sourceType?: CustomerSourceType;
+  sourceName?: string | null;
+  tagIds?: string[];
 }
 
 export interface UpdateCustomerInput {
@@ -59,7 +69,44 @@ export interface UpdateCustomerInput {
   status?: CustomerStatus;
   notes?: string;
   isActive?: boolean;
+  /** When provided, replaces the customer's tags with this list. */
+  tagIds?: string[];
 }
+
+/** A distinct (sourceType, sourceName) tuple as seen in the customers table. */
+export interface CustomerSource {
+  sourceType: CustomerSourceType;
+  sourceName: string | null;
+  count: number;
+}
+
+// --- Tags ---
+
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export interface CreateTagInput {
+  name: string;
+  color?: string;
+  sortOrder?: number;
+}
+
+export interface UpdateTagInput {
+  id: string;
+  name?: string;
+  color?: string;
+  sortOrder?: number;
+}
+
+export const DEFAULT_TAG_COLORS = [
+  '#6366f1', '#10b981', '#f59e0b', '#ef4444',
+  '#3b82f6', '#a855f7', '#ec4899', '#14b8a6',
+] as const;
 
 // --- Product ---
 
@@ -127,6 +174,14 @@ export interface CustomerFilter {
   search?: string;
   status?: CustomerStatus | '';
   isActive?: boolean;
+  sourceType?: CustomerSourceType | '';
+  /** When sourceType='group', restrict to a specific group name. Ignored otherwise. */
+  sourceName?: string | null;
+  /**
+   * Restrict to customers tagged with ANY of these tag ids (OR semantics).
+   * Empty/omitted = no tag restriction.
+   */
+  tagIds?: string[];
 }
 
 export interface PaymentFilter {

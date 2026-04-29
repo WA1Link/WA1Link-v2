@@ -4,12 +4,14 @@ import { Table } from '../ui/Table';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Dropdown } from '../ui/Dropdown';
+import { MultiDropdown } from '../ui/MultiDropdown';
 import { Modal, ModalFooter } from '../ui/Modal';
 import {
   Customer,
   CUSTOMER_STATUSES,
   CUSTOMER_STATUS_COLORS,
   CustomerFilter,
+  Tag,
 } from '../../../shared/types';
 
 interface CustomerListProps {
@@ -23,6 +25,7 @@ interface CustomerListProps {
   onViewDetails: (customer: Customer) => void;
   onSendMessage: (customer: Customer) => void;
   onExport: () => void;
+  tags: Tag[];
 }
 
 export const CustomerList: React.FC<CustomerListProps> = ({
@@ -36,6 +39,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({
   onViewDetails,
   onSendMessage,
   onExport,
+  tags,
 }) => {
   const { t } = useTranslation();
   const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null);
@@ -45,6 +49,8 @@ export const CustomerList: React.FC<CustomerListProps> = ({
     { value: '', label: t('common.all') },
     ...CUSTOMER_STATUSES.map((s) => ({ value: s, label: t(`crm.customerStatus.${s}` as any) })),
   ];
+
+  const tagFilterOptions = tags.map((tag) => ({ value: tag.id, label: tag.name }));
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -86,6 +92,46 @@ export const CustomerList: React.FC<CustomerListProps> = ({
           {t(`crm.customerStatus.${c.status}` as any)}
         </span>
       ),
+    },
+    {
+      key: 'tags',
+      header: t('tags.title'),
+      render: (c: Customer) =>
+        c.tags.length === 0 ? (
+          <span className="text-gray-400 text-xs">—</span>
+        ) : (
+          <div className="flex flex-wrap gap-1">
+            {c.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                style={{ backgroundColor: tag.color }}
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        ),
+    },
+    {
+      key: 'source',
+      header: t('crm.customers.source'),
+      render: (c: Customer) => {
+        const label =
+          c.sourceType === 'group' && c.sourceName
+            ? `${t('crm.customerSourceType.group')}: ${c.sourceName}`
+            : t(`crm.customerSourceType.${c.sourceType}` as any);
+        const colorClass =
+          c.sourceType === 'group' ? 'bg-indigo-50 text-indigo-700'
+            : c.sourceType === 'chat' ? 'bg-emerald-50 text-emerald-700'
+            : c.sourceType === 'manual' ? 'bg-gray-100 text-gray-700'
+            : 'bg-amber-50 text-amber-700';
+        return (
+          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${colorClass}`} title={label}>
+            {label.length > 28 ? label.slice(0, 26) + '…' : label}
+          </span>
+        );
+      },
     },
     {
       key: 'totalPaid',
@@ -153,6 +199,14 @@ export const CustomerList: React.FC<CustomerListProps> = ({
             value={filter.status ?? ''}
             onChange={(v) => onFilterChange({ ...filter, status: v as any })}
             placeholder={t('common.status')}
+          />
+        </div>
+        <div className="w-56">
+          <MultiDropdown
+            options={tagFilterOptions}
+            values={filter.tagIds ?? []}
+            onChange={(vals) => onFilterChange({ ...filter, tagIds: vals.length > 0 ? vals : undefined })}
+            placeholder={t('tags.title')}
           />
         </div>
         <Button variant="secondary" onClick={onExport} size="sm">

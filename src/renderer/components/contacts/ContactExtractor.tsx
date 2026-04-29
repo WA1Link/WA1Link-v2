@@ -21,6 +21,7 @@ export const ContactExtractor: React.FC = () => {
     isLoadingGroups,
     isLoadingChats,
     isExporting,
+    isAddingToCRM,
     fetchGroups,
     fetchPersonalChats,
     toggleGroupSelection,
@@ -31,6 +32,7 @@ export const ContactExtractor: React.FC = () => {
     deselectAllChats,
     exportGroupContacts,
     exportPersonalContacts,
+    addSelectedToCRM,
   } = useContactStore();
 
   const { activeAccountId } = useAccountStore();
@@ -50,6 +52,39 @@ export const ContactExtractor: React.FC = () => {
       return;
     }
     await fetchPersonalChats(activeAccountId);
+  };
+
+  const handleAddToCRM = async () => {
+    if (!activeAccountId) {
+      addToast({ type: 'error', message: t('contactsExtractor.needAccount') });
+      return;
+    }
+
+    const hasAny =
+      activeTab === 'groups' ? selectedGroupIds.size > 0 : selectedChatJids.size > 0;
+    if (!hasAny) {
+      addToast({
+        type: 'warning',
+        message:
+          activeTab === 'groups'
+            ? t('contactsExtractor.selectGroupsFirst')
+            : t('contactsExtractor.selectChatsFirst'),
+      });
+      return;
+    }
+
+    try {
+      const result = await addSelectedToCRM(activeAccountId, activeTab);
+      addToast({
+        type: 'success',
+        message: t('contactsExtractor.addedToCrm', {
+          created: result.created,
+          skipped: result.skipped,
+        }),
+      });
+    } catch (error) {
+      addToast({ type: 'error', message: (error as Error).message });
+    }
   };
 
   const handleExport = async () => {
@@ -146,7 +181,7 @@ export const ContactExtractor: React.FC = () => {
         <Button
           onClick={handleExport}
           isLoading={isExporting}
-          disabled={!hasSelection}
+          disabled={!hasSelection || isAddingToCRM}
           leftIcon={
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -154,6 +189,19 @@ export const ContactExtractor: React.FC = () => {
           }
         >
           {t('contactsExtractor.exportToExcel')}
+        </Button>
+        <Button
+          onClick={handleAddToCRM}
+          isLoading={isAddingToCRM}
+          disabled={!hasSelection || isExporting}
+          variant="secondary"
+          leftIcon={
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          }
+        >
+          {t('contactsExtractor.addToCrm')}
         </Button>
         <span className="text-sm text-gray-500">
           {activeTab === 'groups'

@@ -60,6 +60,7 @@
       "templatesSelected": "{{total}}-dən {{selected}} seçilib",
       "newTemplate": "Yeni şablon",
       "targets": "Alıcılar",
+      "pickFromCrm": "CRM-dən seç",
       "scheduleForLater": "Sonraya planla",
       "scheduleForLaterDescription": "Müəyyən vaxtda göndərmək istəyirsiniz? Kampaniyanı planlayın və o avtomatik işləyəcək.",
       "scheduleCampaign": "Kampaniyanı planla",
@@ -305,11 +306,46 @@
       "page": "Səhifə {{page}} / {{total}}"
     }
   },
+  "tags": {
+    "title": "Etiketlər",
+    "description": "İstənilən müştəriyə tətbiq edə biləcəyiniz xüsusi etiketlər.",
+    "addTag": "Yeni etiket",
+    "empty": "Hələ etiket yoxdur. Müştəriləri etiketləmək üçün birini yaradın.",
+    "createTitle": "Etiket yarat",
+    "editTitle": "Etiketi redaktə et",
+    "deleteConfirm": "Bu etiketi silmək?",
+    "deleteWarning": "Etiket, tətbiq olunduğu bütün müştərilərdən silinəcək. Müştəri qeydləri silinmir.",
+    "nameLabel": "Ad",
+    "namePlaceholder": "məs. VIP, Topdan, Borclu",
+    "colorLabel": "Rəng",
+    "preview": "Baxış",
+    "created": "Etiket yaradıldı",
+    "updated": "Etiket yeniləndi",
+    "deleted": "Etiket silindi",
+    "noneCreatedYet": "Hələ etiket yoxdur. CRM-dəki Etiketlər tabından əlavə edin."
+  },
+  "crmPicker": {
+    "title": "CRM-dən kontaktları seçin",
+    "sourcePlaceholder": "Mənbə",
+    "rangeLabel": "Aralıq",
+    "from": "-dan",
+    "to": "-a",
+    "applyRange": "Tətbiq et",
+    "totalInView": "Görünüşdə: {{count}}",
+    "selectedCount": "Seçilib: {{count}}",
+    "clearSelection": "Seçimi təmizlə",
+    "useSelected": "Seçilənləri istifadə et",
+    "loadedToast": "CRM-dən {{count}} kontakt yükləndi"
+  },
   "contactsExtractor": {
     "groupsTab": "Qruplar",
     "personalTab": "Şəxsi",
     "needAccount": "Əvvəlcə WhatsApp hesabı qoşun",
     "exportToExcel": "Excel-ə ixrac",
+    "addToCrm": "CRM-ə əlavə et",
+    "addedToCrm": "{{created}} yeni kontakt CRM-ə əlavə edildi, {{skipped}} artıq mövcud idi",
+    "selectGroupsFirst": "Ən azı bir qrup seçin",
+    "selectChatsFirst": "Ən azı bir söhbət seçin",
     "groupsSelected": "{{count}} qrup seçilib",
     "chatsSelected": "{{count}} söhbət seçilib",
     "groups": {
@@ -371,6 +407,12 @@
       "Müştəri": "Müştəri",
       "İtirilmiş müştəri": "İtirilmiş müştəri"
     },
+    "customerSourceType": {
+      "group": "Qrup",
+      "chat": "Şəxsi söhbət",
+      "manual": "Əl ilə",
+      "imported": "İdxal edilib"
+    },
     "paymentMethods": {
       "cash": "Nağd",
       "bank_transfer": "Bank köçürməsi",
@@ -384,6 +426,7 @@
       "phone": "Telefon",
       "email": "E-poçt",
       "company": "Şirkət",
+      "source": "Mənbə",
       "notes": "Qeydlər",
       "createdAt": "Yaradılıb",
       "noCustomers": "Hələ müştəri yoxdur",

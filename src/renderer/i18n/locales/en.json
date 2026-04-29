@@ -60,6 +60,7 @@
       "templatesSelected": "{{selected}} of {{total}} selected",
       "newTemplate": "New Template",
       "targets": "Target Contacts",
+      "pickFromCrm": "Pick from CRM",
       "scheduleForLater": "Schedule for Later",
       "scheduleForLaterDescription": "Want to send at a specific time? Schedule your campaign and let it run automatically.",
       "scheduleCampaign": "Schedule Campaign",
@@ -305,11 +306,46 @@
       "page": "Page {{page}} of {{total}}"
     }
   },
+  "tags": {
+    "title": "Tags",
+    "description": "Custom labels you can attach to any customer.",
+    "addTag": "New Tag",
+    "empty": "No tags yet. Create one to start labeling customers.",
+    "createTitle": "Create Tag",
+    "editTitle": "Edit Tag",
+    "deleteConfirm": "Delete this tag?",
+    "deleteWarning": "This removes the tag from all customers it's attached to. Customer records are not deleted.",
+    "nameLabel": "Name",
+    "namePlaceholder": "e.g. VIP, Wholesale, Owes invoice",
+    "colorLabel": "Color",
+    "preview": "Preview",
+    "created": "Tag created",
+    "updated": "Tag updated",
+    "deleted": "Tag deleted",
+    "noneCreatedYet": "No tags created yet. Add some from the Tags tab in CRM."
+  },
+  "crmPicker": {
+    "title": "Select contacts from CRM",
+    "sourcePlaceholder": "Source",
+    "rangeLabel": "Range",
+    "from": "From",
+    "to": "To",
+    "applyRange": "Apply range",
+    "totalInView": "{{count}} in view",
+    "selectedCount": "{{count}} selected",
+    "clearSelection": "Clear selection",
+    "useSelected": "Use selected",
+    "loadedToast": "Loaded {{count}} contact(s) from CRM"
+  },
   "contactsExtractor": {
     "groupsTab": "Groups",
     "personalTab": "Personal",
     "needAccount": "Please connect a WhatsApp account first",
     "exportToExcel": "Export to Excel",
+    "addToCrm": "Add to CRM",
+    "addedToCrm": "Added {{created}} new contact(s) to CRM, {{skipped}} already existed",
+    "selectGroupsFirst": "Please select at least one group",
+    "selectChatsFirst": "Please select at least one chat",
     "groupsSelected": "{{count}} group(s) selected",
     "chatsSelected": "{{count}} chat(s) selected",
     "groups": {
@@ -371,6 +407,12 @@
       "Müştəri": "Customer",
       "İtirilmiş müştəri": "Lost"
     },
+    "customerSourceType": {
+      "group": "Group",
+      "chat": "Personal Chat",
+      "manual": "Manual",
+      "imported": "Imported"
+    },
     "paymentMethods": {
       "cash": "Cash",
       "bank_transfer": "Bank Transfer",
@@ -384,6 +426,7 @@
       "phone": "Phone",
       "email": "Email",
       "company": "Company",
+      "source": "Source",
       "notes": "Notes",
       "createdAt": "Created",
       "noCustomers": "No customers yet",

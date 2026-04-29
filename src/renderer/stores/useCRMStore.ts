@@ -4,6 +4,7 @@ import {
   CreateCustomerInput,
   UpdateCustomerInput,
   CustomerFilter,
+  CustomerSource,
   CRMDashboardStats,
   Product,
   CreateProductInput,
@@ -12,9 +13,12 @@ import {
   CreatePaymentInput,
   UpdatePaymentInput,
   PaymentFilter,
+  Tag,
+  CreateTagInput,
+  UpdateTagInput,
 } from '../../shared/types';
 
-type CRMTab = 'customers' | 'products' | 'payments';
+type CRMTab = 'customers' | 'products' | 'payments' | 'tags';
 
 interface CRMState {
   // Tab
@@ -25,9 +29,13 @@ interface CRMState {
   customerFilter: CustomerFilter;
   selectedCustomer: Customer | null;
   stats: CRMDashboardStats | null;
+  customerSources: CustomerSource[];
 
   // Products
   products: Product[];
+
+  // Tags
+  tags: Tag[];
 
   // Payments
   payments: Payment[];
@@ -49,7 +57,16 @@ interface CRMActions {
   setCustomerFilter: (filter: CustomerFilter) => void;
   selectCustomer: (customer: Customer | null) => void;
   fetchStats: () => Promise<void>;
+  fetchCustomerSources: () => Promise<void>;
+  fetchCustomersWithFilter: (filter: CustomerFilter) => Promise<Customer[]>;
   exportCustomers: () => Promise<string>;
+
+  // Tag actions
+  fetchTags: () => Promise<void>;
+  createTag: (input: CreateTagInput) => Promise<Tag>;
+  updateTag: (input: UpdateTagInput) => Promise<Tag>;
+  deleteTag: (id: string) => Promise<void>;
+  setCustomerTags: (customerId: string, tagIds: string[]) => Promise<void>;
 
   // Product actions
   fetchProducts: () => Promise<void>;
@@ -78,6 +95,8 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
   customerFilter: {},
   selectedCustomer: null,
   stats: null,
+  customerSources: [],
+  tags: [],
   products: [],
   payments: [],
   paymentFilter: {},
@@ -161,6 +180,19 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
     }
   },
 
+  fetchCustomerSources: async () => {
+    try {
+      const customerSources = await window.electronAPI.customer.getSources();
+      set({ customerSources });
+    } catch (error) {
+      set({ error: (error as Error).message });
+    }
+  },
+
+  fetchCustomersWithFilter: async (filter) => {
+    return await window.electronAPI.customer.getAll(filter);
+  },
+
   exportCustomers: async () => {
     try {
       return await window.electronAPI.customer.export(get().customerFilter);
@@ -168,6 +200,51 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
       set({ error: (error as Error).message });
       throw error;
     }
+  },
+
+  // ============ TAGS ============
+
+  fetchTags: async () => {
+    try {
+      const tags = await window.electronAPI.tag.getAll();
+      set({ tags });
+    } catch (error) {
+      set({ error: (error as Error).message });
+    }
+  },
+
+  createTag: async (input) => {
+    const tag = await window.electronAPI.tag.create(input);
+    set((s) => ({ tags: [...s.tags, tag].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)) }));
+    return tag;
+  },
+
+  updateTag: async (input) => {
+    const updated = await window.electronAPI.tag.update(input);
+    set((s) => ({
+      tags: s.tags.map((t) => (t.id === updated.id ? updated : t)),
+      // Also patch the embedded tag list on each customer.
+      customers: s.customers.map((c) => ({
+        ...c,
+        tags: c.tags.map((t) => (t.id === updated.id ? updated : t)),
+      })),
+    }));
+    return updated;
+  },
+
+  deleteTag: async (id) => {
+    await window.electronAPI.tag.delete(id);
+    set((s) => ({
+      tags: s.tags.filter((t) => t.id !== id),
+      // Strip the deleted tag from all customers in cache (FK cascade did it in DB).
+      customers: s.customers.map((c) => ({ ...c, tags: c.tags.filter((t) => t.id !== id) })),
+    }));
+  },
+
+  setCustomerTags: async (customerId, tagIds) => {
+    await window.electronAPI.tag.setForCustomer(customerId, tagIds);
+    // Refresh the customer list so the UI reflects new tag assignments.
+    await get().fetchCustomers();
   },
 
   // ============ PRODUCTS ============

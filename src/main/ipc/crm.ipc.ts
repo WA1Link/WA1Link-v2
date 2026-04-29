@@ -3,11 +3,14 @@ import { IPC_CHANNELS } from './channels';
 import { customerRepository } from '../database/repositories/customer.repository';
 import { productRepository } from '../database/repositories/product.repository';
 import { paymentRepository } from '../database/repositories/payment.repository';
+import { tagRepository } from '../database/repositories/tag.repository';
 import {
   CreateCustomerInput,
   UpdateCustomerInput,
   CustomerFilter,
   Customer,
+  CustomerSource,
+  CustomerSourceType,
   CRMDashboardStats,
   CreateProductInput,
   UpdateProductInput,
@@ -16,6 +19,9 @@ import {
   UpdatePaymentInput,
   PaymentFilter,
   Payment,
+  Tag,
+  CreateTagInput,
+  UpdateTagInput,
 } from '../../shared/types';
 import * as XLSX from 'xlsx';
 import * as fs from 'fs';
@@ -51,6 +57,25 @@ export function registerCRMIPC(mainWindow: BrowserWindow): void {
     return customerRepository.getStats();
   });
 
+  ipcMain.handle(
+    IPC_CHANNELS.CUSTOMER.ENSURE_BULK,
+    async (
+      _,
+      contacts: Array<{
+        phone: string;
+        name: string;
+        sourceType?: CustomerSourceType;
+        sourceName?: string | null;
+      }>
+    ): Promise<{ created: number; skipped: number; failed: number }> => {
+      return customerRepository.ensureContactsBulk(contacts);
+    }
+  );
+
+  ipcMain.handle(IPC_CHANNELS.CUSTOMER.GET_SOURCES, async (): Promise<CustomerSource[]> => {
+    return customerRepository.getDistinctSources();
+  });
+
   ipcMain.handle(IPC_CHANNELS.CUSTOMER.EXPORT, async (_, filter?: CustomerFilter): Promise<string> => {
     const customers = customerRepository.getAll(filter);
 
@@ -81,6 +106,31 @@ export function registerCRMIPC(mainWindow: BrowserWindow): void {
     XLSX.writeFile(wb, result.filePath);
     return result.filePath;
   });
+
+  // ============ TAG ============
+
+  ipcMain.handle(IPC_CHANNELS.TAG.GET_ALL, async (): Promise<Tag[]> => {
+    return tagRepository.getAll();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.TAG.CREATE, async (_, input: CreateTagInput): Promise<Tag> => {
+    return tagRepository.create(input);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.TAG.UPDATE, async (_, input: UpdateTagInput): Promise<Tag> => {
+    return tagRepository.update(input);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.TAG.DELETE, async (_, id: string): Promise<void> => {
+    tagRepository.delete(id);
+  });
+
+  ipcMain.handle(
+    IPC_CHANNELS.TAG.SET_FOR_CUSTOMER,
+    async (_, customerId: string, tagIds: string[]): Promise<void> => {
+      tagRepository.setCustomerTags(customerId, tagIds);
+    }
+  );
 
   // ============ PRODUCT ============
 

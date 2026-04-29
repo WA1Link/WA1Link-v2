@@ -27,6 +27,8 @@ import {
   CreateCustomerInput,
   UpdateCustomerInput,
   CustomerFilter,
+  CustomerSource,
+  CustomerSourceType,
   CRMDashboardStats,
   Product,
   CreateProductInput,
@@ -35,6 +37,9 @@ import {
   CreatePaymentInput,
   UpdatePaymentInput,
   PaymentFilter,
+  Tag,
+  CreateTagInput,
+  UpdateTagInput,
 } from './crm.types';
 
 // Account IPC
@@ -116,6 +121,24 @@ export interface CustomerAPI {
   search: (filter: CustomerFilter) => Promise<Customer[]>;
   getStats: () => Promise<CRMDashboardStats>;
   export: (filter?: CustomerFilter) => Promise<string>;
+  ensureBulk: (
+    contacts: Array<{
+      phone: string;
+      name: string;
+      sourceType?: CustomerSourceType;
+      sourceName?: string | null;
+    }>
+  ) => Promise<{ created: number; skipped: number; failed: number }>;
+  getSources: () => Promise<CustomerSource[]>;
+}
+
+// Tag CRM IPC
+export interface TagAPI {
+  getAll: () => Promise<Tag[]>;
+  create: (input: CreateTagInput) => Promise<Tag>;
+  update: (input: UpdateTagInput) => Promise<Tag>;
+  delete: (id: string) => Promise<void>;
+  setForCustomer: (customerId: string, tagIds: string[]) => Promise<void>;
 }
 
 // Product CRM IPC
@@ -151,6 +174,7 @@ export interface ElectronAPI {
   scheduler: SchedulerAPI;
   license: LicenseAPI;
   customer: CustomerAPI;
+  tag: TagAPI;
   product: ProductAPI;
   payment: PaymentAPI;
   update: UpdateAPI;

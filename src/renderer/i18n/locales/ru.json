@@ -60,6 +60,7 @@
       "templatesSelected": "Выбрано {{selected}} из {{total}}",
       "newTemplate": "Новый шаблон",
       "targets": "Получатели",
+      "pickFromCrm": "Выбрать из CRM",
       "scheduleForLater": "Запланировать на потом",
       "scheduleForLaterDescription": "Хотите отправить в определённое время? Запланируйте кампанию, и она запустится автоматически.",
       "scheduleCampaign": "Запланировать кампанию",
@@ -305,11 +306,46 @@
       "page": "Страница {{page}} из {{total}}"
     }
   },
+  "tags": {
+    "title": "Теги",
+    "description": "Свои метки, которые можно прикрепить к любому клиенту.",
+    "addTag": "Новый тег",
+    "empty": "Тегов пока нет. Создайте, чтобы помечать клиентов.",
+    "createTitle": "Создать тег",
+    "editTitle": "Изменить тег",
+    "deleteConfirm": "Удалить этот тег?",
+    "deleteWarning": "Тег будет снят со всех клиентов, к которым он прикреплён. Сами клиенты не удаляются.",
+    "nameLabel": "Название",
+    "namePlaceholder": "напр. VIP, Опт, Должен счёт",
+    "colorLabel": "Цвет",
+    "preview": "Предпросмотр",
+    "created": "Тег создан",
+    "updated": "Тег обновлён",
+    "deleted": "Тег удалён",
+    "noneCreatedYet": "Тегов пока нет. Добавьте их во вкладке Теги в CRM."
+  },
+  "crmPicker": {
+    "title": "Выбрать контакты из CRM",
+    "sourcePlaceholder": "Источник",
+    "rangeLabel": "Диапазон",
+    "from": "С",
+    "to": "По",
+    "applyRange": "Применить",
+    "totalInView": "В списке: {{count}}",
+    "selectedCount": "Выбрано: {{count}}",
+    "clearSelection": "Снять выделение",
+    "useSelected": "Использовать выбранные",
+    "loadedToast": "Загружено контактов из CRM: {{count}}"
+  },
   "contactsExtractor": {
     "groupsTab": "Группы",
     "personalTab": "Личные",
     "needAccount": "Сначала подключите аккаунт WhatsApp",
     "exportToExcel": "Экспорт в Excel",
+    "addToCrm": "Добавить в CRM",
+    "addedToCrm": "Добавлено новых контактов в CRM: {{created}}, уже существовало: {{skipped}}",
+    "selectGroupsFirst": "Выберите хотя бы одну группу",
+    "selectChatsFirst": "Выберите хотя бы один чат",
     "groupsSelected": "Выбрано групп: {{count}}",
     "chatsSelected": "Выбрано чатов: {{count}}",
     "groups": {
@@ -371,6 +407,12 @@
       "Müştəri": "Клиент",
       "İtirilmiş müştəri": "Потерян"
     },
+    "customerSourceType": {
+      "group": "Группа",
+      "chat": "Личный чат",
+      "manual": "Вручную",
+      "imported": "Импортирован"
+    },
     "paymentMethods": {
       "cash": "Наличные",
       "bank_transfer": "Банковский перевод",
@@ -384,6 +426,7 @@
       "phone": "Телефон",
       "email": "Email",
       "company": "Компания",
+      "source": "Источник",
       "notes": "Заметки",
       "createdAt": "Создан",
       "noCustomers": "Клиентов пока нет",
