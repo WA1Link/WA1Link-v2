@@ -8,7 +8,7 @@ import { Modal, ModalFooter } from '../ui/Modal';
 import {
   Payment,
   PaymentFilter,
-  Customer,
+  CustomerOption,
   Product,
   PAYMENT_METHOD_LABELS,
   PaymentMethod,
@@ -16,7 +16,7 @@ import {
 
 interface PaymentListProps {
   payments: Payment[];
-  customers: Customer[];
+  customers: CustomerOption[];
   products: Product[];
   isLoading: boolean;
   filter: PaymentFilter;

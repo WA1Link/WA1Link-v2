@@ -5,7 +5,11 @@ import {
   UpdateCustomerInput,
   CustomerFilter,
   CustomerSource,
+  CustomerOption,
   CRMDashboardStats,
+  PaginationInput,
+  PaginatedCustomers,
+  DEFAULT_CUSTOMER_PAGE_SIZE,
   Product,
   CreateProductInput,
   UpdateProductInput,
@@ -24,12 +28,17 @@ interface CRMState {
   // Tab
   activeTab: CRMTab;
 
-  // Customers
+  // Customers — `customers` holds the current page only.
   customers: Customer[];
   customerFilter: CustomerFilter;
+  customerPage: number;
+  customerPageSize: number;
+  customerTotal: number;
   selectedCustomer: Customer | null;
   stats: CRMDashboardStats | null;
   customerSources: CustomerSource[];
+  /** Slim id+name+phone projection for dropdowns (PaymentList, PaymentForm). */
+  customerOptions: CustomerOption[];
 
   // Products
   products: Product[];
@@ -50,15 +59,23 @@ interface CRMActions {
   setActiveTab: (tab: CRMTab) => void;
 
   // Customer actions
-  fetchCustomers: (filter?: CustomerFilter) => Promise<void>;
+  fetchCustomers: (filter?: CustomerFilter, page?: number) => Promise<void>;
   createCustomer: (input: CreateCustomerInput) => Promise<Customer>;
   updateCustomer: (input: UpdateCustomerInput) => Promise<Customer>;
   deleteCustomer: (id: string) => Promise<void>;
   setCustomerFilter: (filter: CustomerFilter) => void;
+  setCustomerPage: (page: number) => void;
+  setCustomerPageSize: (size: number) => void;
   selectCustomer: (customer: Customer | null) => void;
   fetchStats: () => Promise<void>;
   fetchCustomerSources: () => Promise<void>;
-  fetchCustomersWithFilter: (filter: CustomerFilter) => Promise<Customer[]>;
+  /** Returns one page (default size) for callers that don't manage pagination
+   *  themselves (e.g. CRMTargetPicker before its own paging refactor). */
+  fetchCustomersWithFilter: (
+    filter: CustomerFilter,
+    pagination?: PaginationInput
+  ) => Promise<PaginatedCustomers>;
+  fetchCustomerOptions: () => Promise<void>;
   exportCustomers: () => Promise<string>;
 
   // Tag actions
@@ -93,9 +110,13 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
   activeTab: 'customers',
   customers: [],
   customerFilter: {},
+  customerPage: 1,
+  customerPageSize: DEFAULT_CUSTOMER_PAGE_SIZE,
+  customerTotal: 0,
   selectedCustomer: null,
   stats: null,
   customerSources: [],
+  customerOptions: [],
   tags: [],
   products: [],
   payments: [],
@@ -107,12 +128,23 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
 
   // ============ CUSTOMERS ============
 
-  fetchCustomers: async (filter) => {
+  fetchCustomers: async (filter, page) => {
     set({ isLoading: true, error: null });
     try {
-      const f = filter ?? get().customerFilter;
-      const customers = await window.electronAPI.customer.getAll(f);
-      set({ customers, isLoading: false });
+      const state = get();
+      const f = filter ?? state.customerFilter;
+      const targetPage = page ?? state.customerPage;
+      const result = await window.electronAPI.customer.getPage(f, {
+        page: targetPage,
+        pageSize: state.customerPageSize,
+      });
+      set({
+        customers: result.items,
+        customerTotal: result.total,
+        customerPage: result.page,
+        customerPageSize: result.pageSize,
+        isLoading: false,
+      });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
@@ -122,10 +154,12 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const customer = await window.electronAPI.customer.create(input);
-      set((state) => ({
-        customers: [customer, ...state.customers],
-        isLoading: false,
-      }));
+      // Jump to page 1 so the just-created row (which sorts to the top by
+      // created_at DESC) is visible. Also keep the slim options list fresh.
+      set({ customerPage: 1 });
+      await get().fetchCustomers(undefined, 1);
+      get().fetchCustomerOptions();
+      set({ isLoading: false });
       return customer;
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
@@ -153,11 +187,15 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       await window.electronAPI.customer.delete(id);
-      set((state) => ({
-        customers: state.customers.filter((c) => c.id !== id),
+      // Re-fetch the page rather than splicing in place — the deleted row may
+      // have left the page short, and totals/page count need to update.
+      const state = get();
+      set({
         selectedCustomer: state.selectedCustomer?.id === id ? null : state.selectedCustomer,
-        isLoading: false,
-      }));
+      });
+      await get().fetchCustomers();
+      get().fetchCustomerOptions();
+      set({ isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
       throw error;
@@ -165,8 +203,19 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
   },
 
   setCustomerFilter: (filter) => {
-    set({ customerFilter: filter });
-    get().fetchCustomers(filter);
+    // Reset to page 1 on filter change so the user sees results from the top.
+    set({ customerFilter: filter, customerPage: 1 });
+    get().fetchCustomers(filter, 1);
+  },
+
+  setCustomerPage: (page) => {
+    set({ customerPage: page });
+    get().fetchCustomers(undefined, page);
+  },
+
+  setCustomerPageSize: (size) => {
+    set({ customerPageSize: size, customerPage: 1 });
+    get().fetchCustomers(undefined, 1);
   },
 
   selectCustomer: (customer) => set({ selectedCustomer: customer }),
@@ -189,8 +238,18 @@ export const useCRMStore = create<CRMStore>((set, get) => ({
     }
   },
 
-  fetchCustomersWithFilter: async (filter) => {
-    return await window.electronAPI.customer.getAll(filter);
+  fetchCustomersWithFilter: async (filter, pagination) => {
+    const p = pagination ?? { page: 1, pageSize: DEFAULT_CUSTOMER_PAGE_SIZE };
+    return await window.electronAPI.customer.getPage(filter, p);
+  },
+
+  fetchCustomerOptions: async () => {
+    try {
+      const customerOptions = await window.electronAPI.customer.getAllForSelect();
+      set({ customerOptions });
+    } catch (error) {
+      set({ error: (error as Error).message });
+    }
   },
 
   exportCustomers: async () => {

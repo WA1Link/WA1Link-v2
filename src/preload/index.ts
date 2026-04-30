@@ -110,6 +110,11 @@ const electronAPI: ElectronAPI = {
   customer: {
     create: (input) => ipcRenderer.invoke(IPC_CHANNELS.CUSTOMER.CREATE, input),
     getAll: (filter) => ipcRenderer.invoke(IPC_CHANNELS.CUSTOMER.GET_ALL, filter),
+    getPage: (filter, pagination) =>
+      ipcRenderer.invoke(IPC_CHANNELS.CUSTOMER.GET_PAGE, filter, pagination),
+    getSlice: (filter, offset, limit) =>
+      ipcRenderer.invoke(IPC_CHANNELS.CUSTOMER.GET_SLICE, filter, offset, limit),
+    getAllForSelect: () => ipcRenderer.invoke(IPC_CHANNELS.CUSTOMER.GET_ALL_FOR_SELECT),
     getById: (id) => ipcRenderer.invoke(IPC_CHANNELS.CUSTOMER.GET_BY_ID, id),
     update: (input) => ipcRenderer.invoke(IPC_CHANNELS.CUSTOMER.UPDATE, input),
     delete: (id) => ipcRenderer.invoke(IPC_CHANNELS.CUSTOMER.DELETE, id),

@@ -5,7 +5,7 @@ import { Input } from '../ui/Input';
 import { Dropdown } from '../ui/Dropdown';
 import { Button } from '../ui/Button';
 import {
-  Customer,
+  CustomerOption,
   Product,
   Payment,
   CreatePaymentInput,
@@ -18,7 +18,7 @@ interface PaymentFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (input: CreatePaymentInput | UpdatePaymentInput) => Promise<void>;
-  customers: Customer[];
+  customers: CustomerOption[];
   products: Product[];
   payment?: Payment | null;
   preselectedCustomerId?: string;

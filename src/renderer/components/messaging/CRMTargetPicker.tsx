@@ -10,6 +10,7 @@ import {
   Customer,
   CUSTOMER_STATUSES,
   CustomerFilter,
+  DEFAULT_CUSTOMER_PAGE_SIZE,
   Target,
 } from '../../../shared/types';
 
@@ -46,6 +47,7 @@ export const CRMTargetPicker: React.FC<CRMTargetPickerProps> = ({
     fetchTags,
   } = useCRMStore();
 
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [statusValue, setStatusValue] = useState<string>('');
   const [sourceValue, setSourceValue] = useState<string>('');
@@ -55,24 +57,41 @@ export const CRMTargetPicker: React.FC<CRMTargetPickerProps> = ({
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_CUSTOMER_PAGE_SIZE);
+  const [total, setTotal] = useState(0);
   // Persist full customer objects so selections survive filter changes.
   const [selectedMap, setSelectedMap] = useState<Map<string, Customer>>(new Map());
 
   // Reset on open
   useEffect(() => {
     if (!isOpen) return;
+    setSearchInput('');
     setSearch('');
     setStatusValue('');
     setSourceValue('');
     setTagIds([]);
     setRangeFrom('');
     setRangeTo('');
+    setPage(1);
     setSelectedMap(new Map());
     fetchCustomerSources();
     fetchTags();
   }, [isOpen, fetchCustomerSources, fetchTags]);
 
-  // Refetch customers whenever filters change while the modal is open.
+  // Debounce the search input.
+  useEffect(() => {
+    const handle = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(handle);
+  }, [searchInput]);
+
+  // Reset to page 1 whenever any filter changes — otherwise the user may land
+  // on a now-empty page.
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusValue, sourceValue, tagIds, pageSize]);
+
+  // Refetch customers whenever filters or paging change while the modal is open.
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
@@ -88,10 +107,11 @@ export const CRMTargetPicker: React.FC<CRMTargetPickerProps> = ({
       tagIds: tagIds.length > 0 ? tagIds : undefined,
     };
 
-    fetchCustomersWithFilter(filter)
-      .then((rows) => {
+    fetchCustomersWithFilter(filter, { page, pageSize })
+      .then((result) => {
         if (!cancelled) {
-          setCustomers(rows);
+          setCustomers(result.items);
+          setTotal(result.total);
         }
       })
       .finally(() => {
@@ -101,7 +121,7 @@ export const CRMTargetPicker: React.FC<CRMTargetPickerProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [isOpen, search, statusValue, sourceValue, tagIds, fetchCustomersWithFilter]);
+  }, [isOpen, search, statusValue, sourceValue, tagIds, page, pageSize, fetchCustomersWithFilter]);
 
   const statusOptions = useMemo(
     () => [
@@ -150,20 +170,37 @@ export const CRMTargetPicker: React.FC<CRMTargetPickerProps> = ({
     });
   };
 
-  /** R3 — select rows [from, to] (1-indexed, inclusive) of the filtered list.
-   *  Resets any prior selection first so the range is the *only* selection. */
-  const applyRange = () => {
+  /** R3 — select rows [from, to] (1-indexed, inclusive) of the *full* filtered
+   *  list, not just the visible page. Resets any prior selection first so the
+   *  range is the *only* selection. */
+  const applyRange = async () => {
     const fromN = parseInt(rangeFrom, 10);
     const toN = parseInt(rangeTo, 10);
     if (!Number.isFinite(fromN) || !Number.isFinite(toN) || fromN < 1 || toN < fromN) {
       return;
     }
-    const start = Math.max(0, fromN - 1);
-    const end = Math.min(customers.length, toN);
-    const slice = customers.slice(start, end);
-    const next = new Map<string, Customer>();
-    for (const c of slice) next.set(c.id, c);
-    setSelectedMap(next);
+
+    const decoded = decodeSource(sourceValue);
+    const filter: CustomerFilter = {
+      search: search || undefined,
+      status: (statusValue || undefined) as CustomerFilter['status'],
+      isActive: true,
+      sourceType: (decoded?.type || undefined) as CustomerFilter['sourceType'],
+      sourceName: decoded?.name ?? undefined,
+      tagIds: tagIds.length > 0 ? tagIds : undefined,
+    };
+
+    const offset = fromN - 1;
+    const limit = toN - fromN + 1;
+    setIsLoading(true);
+    try {
+      const slice = await window.electronAPI.customer.getSlice(filter, offset, limit);
+      const next = new Map<string, Customer>();
+      for (const c of slice) next.set(c.id, c);
+      setSelectedMap(next);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const clearSelection = () => setSelectedMap(new Map());
@@ -193,8 +230,8 @@ export const CRMTargetPicker: React.FC<CRMTargetPickerProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <Input
             placeholder={t('crm.customers.search')}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
           />
           <Dropdown
             options={statusOptions}
@@ -243,8 +280,57 @@ export const CRMTargetPicker: React.FC<CRMTargetPickerProps> = ({
             {t('crmPicker.applyRange')}
           </Button>
           <span className="ml-auto text-xs text-gray-500">
-            {t('crmPicker.totalInView', { count: customers.length })}
+            {t('crmPicker.totalInView', {
+              count: customers.length,
+              defaultValue: `${customers.length} in view`,
+            })}{' '}
+            / {total} total
           </span>
+        </div>
+
+        {/* Page nav */}
+        <div className="flex items-center justify-end gap-2 text-sm text-gray-600">
+          <span className="text-xs text-gray-500 mr-auto">
+            {total === 0
+              ? '0 / 0'
+              : `${(page - 1) * pageSize + 1}–${Math.min(total, page * pageSize)} / ${total}`}
+          </span>
+          <span className="text-xs text-gray-500">
+            {t('crm.customers.pageSize', { defaultValue: 'Page size' })}
+          </span>
+          <div className="w-24">
+            <Dropdown
+              options={[
+                { value: '50', label: '50' },
+                { value: '100', label: '100' },
+                { value: '200', label: '200' },
+                { value: '500', label: '500' },
+              ]}
+              value={String(pageSize)}
+              onChange={(v) => setPageSize(parseInt(v, 10) || 100)}
+            />
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1 || isLoading}
+          >
+            ‹ {t('common.prev', { defaultValue: 'Prev' })}
+          </Button>
+          <span className="px-2 font-medium">
+            {page} / {Math.max(1, Math.ceil(total / pageSize))}
+          </span>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() =>
+              setPage((p) => Math.min(Math.max(1, Math.ceil(total / pageSize)), p + 1))
+            }
+            disabled={page >= Math.max(1, Math.ceil(total / pageSize)) || isLoading}
+          >
+            {t('common.next', { defaultValue: 'Next' })} ›
+          </Button>
         </div>
 
         {/* Table */}
@@ -308,7 +394,9 @@ export const CRMTargetPicker: React.FC<CRMTargetPickerProps> = ({
                             onClick={(e) => e.stopPropagation()}
                           />
                         </td>
-                        <td className="px-2 py-2 text-xs text-gray-500 font-mono">{i + 1}</td>
+                        <td className="px-2 py-2 text-xs text-gray-500 font-mono">
+                          {(page - 1) * pageSize + i + 1}
+                        </td>
                         <td className="px-3 py-2 text-sm">{c.fullName}</td>
                         <td className="px-3 py-2 text-sm font-mono">{c.phoneNumber}</td>
                         <td className="px-3 py-2 text-xs">

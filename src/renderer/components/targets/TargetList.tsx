@@ -41,7 +41,7 @@ export const TargetList: React.FC<TargetListProps> = ({ targets, onClear }) => {
         </Button>
       </div>
 
-      <div className="max-h-64 overflow-y-auto">
+      <div className="max-h-[500px] overflow-y-auto">
         <Table
           columns={columns}
           data={targets}

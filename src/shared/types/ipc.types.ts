@@ -29,7 +29,10 @@ import {
   CustomerFilter,
   CustomerSource,
   CustomerSourceType,
+  CustomerOption,
   CRMDashboardStats,
+  PaginationInput,
+  PaginatedCustomers,
   Product,
   CreateProductInput,
   UpdateProductInput,
@@ -115,6 +118,12 @@ export interface LicenseAPI {
 export interface CustomerAPI {
   create: (input: CreateCustomerInput) => Promise<Customer>;
   getAll: (filter?: CustomerFilter) => Promise<Customer[]>;
+  /** Paginated fetch — default entry point for the CRM list and picker. */
+  getPage: (filter: CustomerFilter, pagination: PaginationInput) => Promise<PaginatedCustomers>;
+  /** Contiguous slice of the filtered list by global offset+limit. */
+  getSlice: (filter: CustomerFilter, offset: number, limit: number) => Promise<Customer[]>;
+  /** Slim id+name+phone projection for dropdowns. No tag hydration. */
+  getAllForSelect: () => Promise<CustomerOption[]>;
   getById: (id: string) => Promise<Customer | null>;
   update: (input: UpdateCustomerInput) => Promise<Customer>;
   delete: (id: string) => Promise<void>;

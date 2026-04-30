@@ -184,6 +184,30 @@ export interface CustomerFilter {
   tagIds?: string[];
 }
 
+/** Pagination input — pages are 1-indexed. */
+export interface PaginationInput {
+  page: number;
+  pageSize: number;
+}
+
+export const DEFAULT_CUSTOMER_PAGE_SIZE = 100;
+
+export interface PaginatedCustomers {
+  items: Customer[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+/** Slim customer projection for dropdowns and pickers — avoids shipping the full
+ *  Customer object (with hydrated tags) when only id/name/phone are needed. */
+export interface CustomerOption {
+  id: string;
+  fullName: string;
+  phoneNumber: string;
+  isActive: boolean;
+}
+
 export interface PaymentFilter {
   customerId?: string;
   productId?: string;

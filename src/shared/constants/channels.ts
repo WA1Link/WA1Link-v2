@@ -52,6 +52,9 @@ export const IPC_CHANNELS = {
   CUSTOMER: {
     CREATE: 'customer:create',
     GET_ALL: 'customer:get-all',
+    GET_PAGE: 'customer:get-page',
+    GET_SLICE: 'customer:get-slice',
+    GET_ALL_FOR_SELECT: 'customer:get-all-for-select',
     GET_BY_ID: 'customer:get-by-id',
     UPDATE: 'customer:update',
     DELETE: 'customer:delete',

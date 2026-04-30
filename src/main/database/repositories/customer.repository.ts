@@ -8,7 +8,10 @@ import {
   CustomerStatus,
   CustomerSource,
   CustomerSourceType,
+  CustomerOption,
   CRMDashboardStats,
+  PaginationInput,
+  PaginatedCustomers,
   DEFAULT_CUSTOMER_STATUS,
   CUSTOMER_STATUSES,
 } from '../../../shared/types';
@@ -98,8 +101,16 @@ export class CustomerRepository {
     return customer;
   }
 
-  getAll(filter?: CustomerFilter): Customer[] {
-    const db = getDatabase();
+  /** Build the FROM/WHERE/GROUP-BY fragments (and bind values) shared by getAll,
+   *  getPage, and the count query. Centralizing this keeps the filter semantics
+   *  identical across read paths. */
+  private buildQueryParts(filter?: CustomerFilter): {
+    from: string;
+    where: string;
+    groupBy: string;
+    values: unknown[];
+    hasTagJoin: boolean;
+  } {
     const conditions: string[] = [];
     const values: unknown[] = [];
 
@@ -134,6 +145,7 @@ export class CustomerRepository {
     const tagIds = filter?.tagIds?.filter(Boolean) ?? [];
     let from = 'customers';
     let groupBy = '';
+    let hasTagJoin = false;
     if (tagIds.length > 0) {
       const placeholders = tagIds.map(() => '?').join(',');
       from = `customers JOIN customer_tags ct ON ct.customer_id = customers.id`;
@@ -142,13 +154,84 @@ export class CustomerRepository {
       // OR semantics: a customer matching multiple selected tags should still
       // appear once. GROUP BY id collapses the join duplicates.
       groupBy = 'GROUP BY customers.id';
+      hasTagJoin = true;
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    return { from, where, groupBy, values, hasTagJoin };
+  }
+
+  getAll(filter?: CustomerFilter): Customer[] {
+    const db = getDatabase();
+    const { from, where, groupBy, values } = this.buildQueryParts(filter);
     const rows = db
       .prepare(`SELECT customers.* FROM ${from} ${where} ${groupBy} ORDER BY created_at DESC`)
       .all(...values) as CustomerRow[];
     return hydrateTags(rows.map(rowToCustomer));
+  }
+
+  /** Paginated fetch with total count. Default entry point for the CRM list UI;
+   *  caps payload size and tag-hydration placeholder count regardless of how
+   *  many customers exist in the database. */
+  getPage(filter: CustomerFilter, pagination: PaginationInput): PaginatedCustomers {
+    const db = getDatabase();
+    const { from, where, groupBy, values, hasTagJoin } = this.buildQueryParts(filter);
+
+    // Count: when the tag-join is present, GROUP BY produces one row per
+    // customer, so we wrap the grouped query and count its rows. Otherwise a
+    // straight COUNT(*) is fine.
+    const countSql = hasTagJoin
+      ? `SELECT COUNT(*) as count FROM (SELECT customers.id FROM ${from} ${where} ${groupBy})`
+      : `SELECT COUNT(*) as count FROM ${from} ${where}`;
+    const total = (db.prepare(countSql).get(...values) as { count: number }).count;
+
+    const page = Math.max(1, Math.floor(pagination.page) || 1);
+    const pageSize = Math.max(1, Math.min(1000, Math.floor(pagination.pageSize) || 100));
+    const offset = (page - 1) * pageSize;
+
+    const rows = db
+      .prepare(
+        `SELECT customers.* FROM ${from} ${where} ${groupBy} ORDER BY created_at DESC LIMIT ? OFFSET ?`
+      )
+      .all(...values, pageSize, offset) as CustomerRow[];
+
+    return {
+      items: hydrateTags(rows.map(rowToCustomer)),
+      total,
+      page,
+      pageSize,
+    };
+  }
+
+  /** Return a contiguous slice of the filtered list by global offset+limit.
+   *  Used by the picker's range-select tool, where the user names rows by
+   *  their absolute position (e.g. "rows 1–5000") rather than per-page. */
+  getSlice(filter: CustomerFilter, offset: number, limit: number): Customer[] {
+    const db = getDatabase();
+    const { from, where, groupBy, values } = this.buildQueryParts(filter);
+    const safeOffset = Math.max(0, Math.floor(offset) || 0);
+    const safeLimit = Math.max(0, Math.min(20000, Math.floor(limit) || 0));
+    if (safeLimit === 0) return [];
+    const rows = db
+      .prepare(
+        `SELECT customers.* FROM ${from} ${where} ${groupBy} ORDER BY created_at DESC LIMIT ? OFFSET ?`
+      )
+      .all(...values, safeLimit, safeOffset) as CustomerRow[];
+    return hydrateTags(rows.map(rowToCustomer));
+  }
+
+  /** Slim list of all customers for dropdowns. Skips tag hydration entirely. */
+  getAllForSelect(): CustomerOption[] {
+    const db = getDatabase();
+    const rows = db
+      .prepare('SELECT id, full_name, phone_number, is_active FROM customers ORDER BY full_name ASC')
+      .all() as Array<{ id: string; full_name: string; phone_number: string; is_active: number }>;
+    return rows.map((r) => ({
+      id: r.id,
+      fullName: r.full_name,
+      phoneNumber: r.phone_number,
+      isActive: r.is_active === 1,
+    }));
   }
 
   update(input: UpdateCustomerInput): Customer {

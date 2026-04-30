@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Table } from '../ui/Table';
 import { Button } from '../ui/Button';
@@ -26,6 +26,12 @@ interface CustomerListProps {
   onSendMessage: (customer: Customer) => void;
   onExport: () => void;
   tags: Tag[];
+  // Pagination
+  page: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
 }
 
 export const CustomerList: React.FC<CustomerListProps> = ({
@@ -40,10 +46,40 @@ export const CustomerList: React.FC<CustomerListProps> = ({
   onSendMessage,
   onExport,
   tags,
+  page,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange,
 }) => {
   const { t } = useTranslation();
   const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Debounce the search input so each keystroke doesn't fire a fresh paginated
+  // query against (potentially) tens of thousands of customers.
+  const [searchInput, setSearchInput] = useState(filter.search ?? '');
+  useEffect(() => {
+    setSearchInput(filter.search ?? '');
+  }, [filter.search]);
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      if ((filter.search ?? '') !== searchInput) {
+        onFilterChange({ ...filter, search: searchInput || undefined });
+      }
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [searchInput, filter, onFilterChange]);
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeEnd = Math.min(total, page * pageSize);
+  const pageSizeOptions = [
+    { value: '50', label: '50' },
+    { value: '100', label: '100' },
+    { value: '200', label: '200' },
+    { value: '500', label: '500' },
+  ];
 
   const statusFilterOptions = [
     { value: '', label: t('common.all') },
@@ -184,8 +220,8 @@ export const CustomerList: React.FC<CustomerListProps> = ({
         <div className="flex-1 min-w-[200px]">
           <Input
             placeholder={t('crm.customers.search')}
-            value={filter.search ?? ''}
-            onChange={(e) => onFilterChange({ ...filter, search: e.target.value })}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             leftAddon={
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -226,6 +262,55 @@ export const CustomerList: React.FC<CustomerListProps> = ({
         isLoading={isLoading}
         emptyMessage={t('crm.customers.noCustomers')}
       />
+
+      {/* Pagination */}
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-gray-600">
+        <div>
+          {total === 0
+            ? t('crm.customers.noCustomers')
+            : t('crm.customers.pagingRange', {
+                from: rangeStart,
+                to: rangeEnd,
+                total,
+                defaultValue: `${rangeStart}–${rangeEnd} / ${total}`,
+              })}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">
+            {t('crm.customers.pageSize', { defaultValue: 'Page size' })}
+          </span>
+          <div className="w-24">
+            <Dropdown
+              options={pageSizeOptions}
+              value={String(pageSize)}
+              onChange={(v) => onPageSizeChange(parseInt(v, 10) || 100)}
+            />
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onPageChange(Math.max(1, page - 1))}
+            disabled={page <= 1 || isLoading}
+          >
+            {t('common.prev', { defaultValue: '‹ Prev' })}
+          </Button>
+          <span className="px-2 font-medium">
+            {t('crm.customers.pageOf', {
+              page,
+              total: totalPages,
+              defaultValue: `${page} / ${totalPages}`,
+            })}
+          </span>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages || isLoading}
+          >
+            {t('common.next', { defaultValue: 'Next ›' })}
+          </Button>
+        </div>
+      </div>
 
       {/* Delete Confirmation */}
       <Modal

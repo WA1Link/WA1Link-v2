@@ -11,7 +11,10 @@ import {
   Customer,
   CustomerSource,
   CustomerSourceType,
+  CustomerOption,
   CRMDashboardStats,
+  PaginationInput,
+  PaginatedCustomers,
   CreateProductInput,
   UpdateProductInput,
   Product,
@@ -35,6 +38,24 @@ export function registerCRMIPC(mainWindow: BrowserWindow): void {
 
   ipcMain.handle(IPC_CHANNELS.CUSTOMER.GET_ALL, async (_, filter?: CustomerFilter): Promise<Customer[]> => {
     return customerRepository.getAll(filter);
+  });
+
+  ipcMain.handle(
+    IPC_CHANNELS.CUSTOMER.GET_PAGE,
+    async (_, filter: CustomerFilter, pagination: PaginationInput): Promise<PaginatedCustomers> => {
+      return customerRepository.getPage(filter ?? {}, pagination);
+    }
+  );
+
+  ipcMain.handle(
+    IPC_CHANNELS.CUSTOMER.GET_SLICE,
+    async (_, filter: CustomerFilter, offset: number, limit: number): Promise<Customer[]> => {
+      return customerRepository.getSlice(filter ?? {}, offset, limit);
+    }
+  );
+
+  ipcMain.handle(IPC_CHANNELS.CUSTOMER.GET_ALL_FOR_SELECT, async (): Promise<CustomerOption[]> => {
+    return customerRepository.getAllForSelect();
   });
 
   ipcMain.handle(IPC_CHANNELS.CUSTOMER.GET_BY_ID, async (_, id: string): Promise<Customer | null> => {

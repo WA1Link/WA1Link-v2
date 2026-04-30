@@ -53,6 +53,9 @@ export const CRMPage: React.FC = () => {
     store.fetchPayments();
     store.fetchStats();
     store.fetchTags();
+    // Slim customer list for PaymentList/PaymentForm dropdowns (avoids shipping
+    // the full paginated list and lets payments pick from any customer).
+    store.fetchCustomerOptions();
   }, []);
 
   // Customer handlers
@@ -188,6 +191,11 @@ export const CRMPage: React.FC = () => {
           onSendMessage={handleSendMessage}
           onExport={handleExportCustomers}
           tags={store.tags}
+          page={store.customerPage}
+          pageSize={store.customerPageSize}
+          total={store.customerTotal}
+          onPageChange={store.setCustomerPage}
+          onPageSizeChange={store.setCustomerPageSize}
         />
       )}
 
@@ -206,7 +214,7 @@ export const CRMPage: React.FC = () => {
       {store.activeTab === 'payments' && (
         <PaymentList
           payments={store.payments}
-          customers={store.customers}
+          customers={store.customerOptions}
           products={store.products}
           isLoading={store.isLoading}
           filter={store.paymentFilter}
@@ -246,7 +254,7 @@ export const CRMPage: React.FC = () => {
         isOpen={paymentFormOpen}
         onClose={() => setPaymentFormOpen(false)}
         onSubmit={handlePaymentSubmit}
-        customers={store.customers}
+        customers={store.customerOptions}
         products={store.products}
         payment={editingPayment}
       />
