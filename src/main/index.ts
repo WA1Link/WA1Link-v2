@@ -7,6 +7,7 @@ import { registerAllIPC } from './ipc';
 import { socketService } from './services/whatsapp/socket.service';
 import { schedulerService } from './services/scheduler/scheduler.service';
 import { reportStartup } from './services/telemetry/tmstat.service';
+import { checkUpdateRequired } from './services/telemetry/version-check.service';
 import { IPC_CHANNELS } from '../shared/constants/channels';
 
 // Use a different userData path to avoid GPU cache lock issues
@@ -70,6 +71,26 @@ app.whenReady().then(async () => {
     setInterval(() => {
       autoUpdater.checkForUpdatesAndNotify();
     }, 4 * 60 * 60 * 1000);
+
+    // Hard version gate: ask the server for the minimum supported version. If
+    // the running build is below it, tell the renderer to block the UI until
+    // electron-updater finishes downloading the new build. Re-checks every 4h
+    // so a long-running session also gets blocked if the floor moves.
+    const runVersionGate = async () => {
+      const required = await checkUpdateRequired();
+      if (!required) return;
+      const w = getMainWindow();
+      w?.webContents.send(IPC_CHANNELS.UPDATE.REQUIRED, required);
+      // Kick the auto-updater so the download starts immediately rather than
+      // waiting for the next scheduled check.
+      autoUpdater.checkForUpdatesAndNotify().catch(() => {
+        // Errors already surface via the autoUpdater 'error' listener.
+      });
+    };
+    // Defer the first check slightly so the renderer has subscribed to the
+    // event before we send it.
+    setTimeout(runVersionGate, 3000);
+    setInterval(runVersionGate, 4 * 60 * 60 * 1000);
   }
 
   // macOS: re-create window when dock icon is clicked

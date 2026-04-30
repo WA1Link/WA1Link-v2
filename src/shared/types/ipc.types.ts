@@ -172,6 +172,11 @@ export interface PaymentAPI {
 export interface UpdateAPI {
   onUpdateAvailable: (callback: (info: { version: string }) => void) => () => void;
   onUpdateDownloaded: (callback: (info: { version: string }) => void) => () => void;
+  /** Fires when the running version is below the server's minimum required.
+   *  The renderer should display a blocking overlay until the user updates. */
+  onUpdateRequired: (
+    callback: (info: { currentVersion: string; minVersion: string }) => void
+  ) => () => void;
   install: () => Promise<void>;
 }
 

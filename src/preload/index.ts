@@ -161,6 +161,11 @@ const electronAPI: ElectronAPI = {
       ipcRenderer.on(IPC_CHANNELS.UPDATE.DOWNLOADED, handler);
       return () => ipcRenderer.removeListener(IPC_CHANNELS.UPDATE.DOWNLOADED, handler);
     },
+    onUpdateRequired: (callback) => {
+      const handler = (_: Electron.IpcRendererEvent, data: any) => callback(data);
+      ipcRenderer.on(IPC_CHANNELS.UPDATE.REQUIRED, handler);
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.UPDATE.REQUIRED, handler);
+    },
     install: () => ipcRenderer.invoke(IPC_CHANNELS.UPDATE.INSTALL),
   },
 };

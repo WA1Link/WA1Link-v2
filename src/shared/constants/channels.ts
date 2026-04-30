@@ -89,6 +89,9 @@ export const IPC_CHANNELS = {
     AVAILABLE: 'update:available',
     DOWNLOADED: 'update:downloaded',
     INSTALL: 'update:install',
+    /** Emitted at startup when the running version is below the server's
+     *  minimum supported version. Signals the renderer to block the UI. */
+    REQUIRED: 'update:required',
   },
 } as const;
 
