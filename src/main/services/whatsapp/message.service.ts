@@ -250,8 +250,7 @@ export class MessageService extends EventEmitter {
       crmStats,
     };
 
-    const socket = socketService.getSocket();
-    if (!socket || !socketService.isConnected()) {
+    if (!socketService.getSocket() || !socketService.isConnected()) {
       this.emit('error', { message: 'Socket is not connected' });
       this.emit('complete', {
         sent: 0,
@@ -260,6 +259,10 @@ export class MessageService extends EventEmitter {
       });
       return;
     }
+    // Max time to wait for the auto-reconnect path to bring the socket back
+    // before giving up on the campaign. Baileys' backoff caps at 30s, so 90s
+    // covers two or three reconnect attempts comfortably.
+    const RECONNECT_WAIT_MS = 90_000;
 
     // Cache image buffers so we don't re-read the same file once per target.
     // Maps absolute path -> { buffer | error }.
@@ -295,19 +298,31 @@ export class MessageService extends EventEmitter {
         break; // Aborted during delay
       }
 
-      // Check socket connection
+      // Check socket connection. A transient disconnect (Wi-Fi blip, NAT
+      // reset, server-side keepalive timeout) used to abort the entire
+      // campaign — now we wait for the auto-reconnect path before giving up.
       if (!socketService.isConnected()) {
-        this.emit('error', { message: 'Socket disconnected during sending' });
-        break;
+        const reconnected = await socketService.waitForReconnect(RECONNECT_WAIT_MS);
+        if (!reconnected) {
+          this.emit('error', {
+            message: `Socket disconnected during sending — reconnect timed out after ${RECONNECT_WAIT_MS / 1000}s`,
+          });
+          break;
+        }
       }
 
       try {
         // Send all messages for this target. Wrap each Baileys call in a
         // hard timeout — if the socket is silently stuck (e.g. WhatsApp
         // server-side init query hang), the awaited promise can otherwise
-        // never resolve and the entire batch freezes.
+        // never resolve and the entire batch freezes. Read the live socket
+        // each time so we don't keep using a dead handle after a reconnect.
         const sendWithTimeout = async (payload: Record<string, unknown>) => {
           const SEND_TIMEOUT_MS = 30_000;
+          const liveSocket = socketService.getSocket();
+          if (!liveSocket) {
+            throw new Error('Socket is not available');
+          }
           let timer: NodeJS.Timeout | undefined;
           const timeoutPromise = new Promise<never>((_, reject) => {
             timer = setTimeout(
@@ -317,7 +332,7 @@ export class MessageService extends EventEmitter {
           });
           try {
             await Promise.race([
-              socket.sendMessage(target.jid, payload),
+              liveSocket.sendMessage(target.jid, payload),
               timeoutPromise,
             ]);
           } finally {
@@ -325,15 +340,33 @@ export class MessageService extends EventEmitter {
           }
         };
 
+        // Single retry on transient send failure: if the first attempt fails
+        // because the ws is mid-flush during a reconnect, wait briefly for the
+        // socket to come back and try once more before counting as failed.
+        const sendOneWithRetry = async (payload: Record<string, unknown>) => {
+          try {
+            await sendWithTimeout(payload);
+          } catch (err) {
+            const msg = (err as Error).message ?? '';
+            const isTransient =
+              !socketService.isConnected() ||
+              /closed|ECONNRESET|EPIPE|stream errored|timed out/i.test(msg);
+            if (!isTransient) throw err;
+            const back = await socketService.waitForReconnect(RECONNECT_WAIT_MS);
+            if (!back) throw err;
+            await sendWithTimeout(payload);
+          }
+        };
+
         for (const message of target.messages) {
           if (message.type === 'text') {
-            await sendWithTimeout({ text: message.value });
+            await sendOneWithRetry({ text: message.value });
           } else if (message.type === 'image') {
             const img = loadImage(message.value);
             if (img.error || !img.buffer) {
               throw new Error(`Image not readable (${message.value}): ${img.error ?? 'unknown error'}`);
             }
-            await sendWithTimeout({ image: img.buffer });
+            await sendOneWithRetry({ image: img.buffer });
           }
         }
 

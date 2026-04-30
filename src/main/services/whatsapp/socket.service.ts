@@ -267,7 +267,10 @@ export class SocketService extends EventEmitter {
       fireInitQueries: true,
       syncFullHistory: false,
       connectTimeoutMs: 60_000,
-      keepAliveIntervalMs: 20_000,
+      // Slightly above the classic 30s consumer-NAT idle timeout. 20s pings were
+      // borderline; bumping to 25s reduces spurious mid-campaign disconnects
+      // without giving the server time to drop the conn as truly idle.
+      keepAliveIntervalMs: 25_000,
       browser: ['Ubuntu', 'Chrome', '20.0.04'],
       version,
     });
@@ -848,6 +851,40 @@ export class SocketService extends EventEmitter {
    */
   getSocket(): WASocket | null {
     return this.state.socket;
+  }
+
+  /**
+   * Wait until the socket is connected (or already connected). Resolves true
+   * once connected within `timeoutMs`, false on timeout. Used by the bulk
+   * send loop to ride out transient mid-campaign disconnects rather than
+   * aborting the entire run on the first dropped websocket.
+   */
+  waitForReconnect(timeoutMs: number): Promise<boolean> {
+    if (this.isConnected()) return Promise.resolve(true);
+
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (ok: boolean) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        clearInterval(poll);
+        this.off('ready', onReady);
+        resolve(ok);
+      };
+      const onReady = () => {
+        // 'ready' fires immediately after the socket emits 'open'; double-check
+        // isConnected() in case the underlying ws.readyState briefly disagrees.
+        if (this.isConnected()) finish(true);
+      };
+      // Belt-and-braces: poll every 500ms in case 'ready' was already emitted
+      // before we attached the listener (race during fast reconnect).
+      const poll = setInterval(() => {
+        if (this.isConnected()) finish(true);
+      }, 500);
+      const timer = setTimeout(() => finish(false), timeoutMs);
+      this.on('ready', onReady);
+    });
   }
 
   /**
